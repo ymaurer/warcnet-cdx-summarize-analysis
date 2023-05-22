@@ -38,7 +38,7 @@ def calc_statb(lvl2, tld, years):
 def output_statb(args):
     fname = args.prefix
     with open(fname + "-statb-distinct-tld-overall.csv", 'w') as fil:
-        fil.write(f'{len(stata_domains)}')
+        fil.write(f'{len(statb_tlds)}')
     with open(fname + "-statb-distinct-tld-per-year.csv", 'w') as fil:
         for y in sorted(statb_tld_py):
             fil.write(f'{y}{args.delimiter}{len(statb_tld_py[y])}\n')
@@ -98,7 +98,7 @@ if __name__ == '__main__':
     parser = ArgumentParser(description='Calculate Warcnet chapter statistics from summary file')
     parser.add_argument('--prefix', action="store", help='prefix of the output file')
     parser.add_argument('--minyear', action="store", default=1993, help='Minimum Year for statc: Number of distinct domains on TLDs per year report')
-    parser.add_argument('--maxyear', action="store", default=2023, help='Maximum Year for statc: Number of distinct domains on TLDs per year report')
+    parser.add_argument('--maxyear', action="store", default=2021, help='Maximum Year for statc: Number of distinct domains on TLDs per year report')
     parser.add_argument('--delimiter', action="store", default=',', help='Output file delimiter for csv files')
     parser.add_argument('file', nargs=1, help='summary file')
     args = parser.parse_args()
