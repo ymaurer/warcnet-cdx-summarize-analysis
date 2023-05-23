@@ -1,0 +1,315 @@
+---
+title: "cdx-summarize_analysis"
+output: html_document
+date: "2023-05-16"
+editor_options: 
+  chunk_output_type: console
+---
+New version of the script started 16.05.2023 to include the analysis and visualizations for the chapter (and to clean up previous versions).
+Work in progress!
+
+NB: Change chunk input to inline in order to include them in the report if knitted
+
+# Knit to create pdf report
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Load libraries
+```{r}
+pacman::p_load(tidyverse,here,fs,ggplot2,reshape2,scales)
+# here() makes it easy to access data and files in the project directory thereby avoiding 
+# using pull paths
+# fs is for file system stuff, e.g., dir_ls
+# scales is used to show percentage on the y axis
+```
+
+# Set working directory
+```{r}
+setwd("/Users/au148767/Projects/cdx-summarize/")
+```
+
+# Create read files function
+A function for loading a set of cvs files into a dataframe while including (part of) the filename in a column (name "collection").
+```{r}
+read_data_files <- function(folder, glob_expression, col_names) {
+  dir_ls(here(folder), glob = glob_expression) %>% 
+    map_dfr(
+      \(filename) {
+        print(filename);
+        read_csv(filename, col_names = col_names)  %>%
+          add_column(
+            collection = paste(str_split(basename(filename),"-",simplify = T)[1:2], collapse = "-")
+          )
+      }
+    )
+}
+```
+
+# 1. Total number of distinct domains from all countries and archives
+Based on stata-distinct-domains-overall
+```{r}
+# read files with distinct domains overall (only one number)
+df_distinct_domains_overall <- read_data_files("data", "*distinct-domains-overall.csv", c("n")) %>% 
+  separate(collection, c("archive", "country"), remove=FALSE) # create columns with archive and country based on file name
+```
+
+# 2. Number of distinct domains in all archives across years shown as facets
+Based on stata-distinct-domains-per-year
+```{r}
+# read files and remove years that are errors
+clean_domains_per_year <- read_data_files("data","*domains-per-year.csv", c("year", "count")) %>%  
+  filter(year > 1992)  %>%
+  filter(year < 2022) %>% 
+  separate(collection, c("archive", "country"), remove=FALSE)
+
+# how many years are represented for each country in each archive? 
+clean_domains_per_year %>% count(archive, country)
+
+# collections as facets
+clean_domains_per_year |>
+  ggplot(aes(x=year, y=count/1000000)) +
+  geom_bar(stat="identity") +
+  facet_wrap(~collection) +
+  theme_minimal() +
+  theme(legend.title=element_text(size = 18, face = "bold")) +
+  theme(legend.text=element_text(size = 16, face = "bold")) + 
+  theme(axis.text=element_text(size=16, face = "bold"),axis.title=element_text(size=16, face = "bold")) +
+  theme(strip.text.x = element_text(size = 12, face = "bold"), strip.text.y = element_text(size = 12, face = "bold")) +
+  scale_y_continuous(labels = function(x) format(x, big.mark = ".", decimal.mark = ",", scientific = F)) +
+  labs(y = "Number of domains in millions \n", x = "") 
+# TO DO: find out how to change labels
+
+# can also be used with filter: filter(archive=="bnf") for only bnf OR filter(archive!="bnf") for all archives except bnf (!= means not equal to)
+# to filter on more than once thing, use fx filter(archive %in% c("cc", "ia")), see example:
+
+# clean_domains_per_year  %>%
+#  filter(archive %in% c("cc", "ia")) %>% 
+#  ggplot(aes(x=year, y=count/1000000)) +
+#  geom_bar(stat="identity") +
+#  facet_wrap(~collection) +
+#  theme_minimal() +
+#  scale_y_continuous(labels = function(x) format(x, big.mark = ".", decimal.mark = ",", scientific = F))
+```
+
+# 3. Each ccTLD across all archives
+## .dk
+Based on a file I have manually created called dk_all_archives, which is based on statc-distinct-lvl2-per-tld-per-year.
+I have taken the .dk column from each of the files named statc-distinct-lvl2-per-tld-per-year, which means that 
+dk_all_archives includes the number of second-level domains with the TLD .dk from each year that are in all the archives' holdings.
+```{r}
+dk_all_archives <- read_csv2("data/dk_all_archives.csv") 
+# før hed den dk_all_archives <- read_csv2(here("data/dk_all_archives.csv")) men tror ikke here gør nogen forskel?
+# dk_all_archives$year <- as.factor(dk_all_archives$year) # den gør vist ikke noget?
+
+dk_all_archives_melt <- melt(dk_all_archives, 
+                        id.var="year",
+                        measure.vars = colnames(dk_all_archives)[! colnames(dk_all_archives) %in% c("year")],
+                        variable.name = "archive", 
+                        value.name = "n")
+
+ggplot(data = dk_all_archives_melt, aes(x = year, y = n, group = archive, color = archive)) + 
+  geom_point() + 
+  geom_line(linewidth = 1.2) + 
+  theme_minimal() +
+  theme(legend.title=element_text(size = 16, face = "bold")) +
+  theme(legend.text=element_text(size = 14, face = "bold")) + 
+  theme(axis.text=element_text(size=14, face = "bold"),axis.title=element_text(size=16, face = "bold")) +
+  scale_y_continuous(labels = function(x) format(x, big.mark = ".", decimal.mark = ",", scientific = F)) +
+  scale_color_brewer(palette="Spectral", labels = c("BNF","Common Crawl", "Internet Archive", "Luxembourg Web Archive", "Netarkivet", "Hungary Web Archive")) +
+  labs(y = "Number of domains \n", x = "\n Year", color = "Archive") 
+
+# alternative colours: scale_colour_manual(values = c("red", "blue", "gold", "green4", "darkviolet", "pink"), labels = c("BNF","Common Crawl", "Internet Archive", "Luxembourg Web Archive", "Netarkivet", "Hungary Web Archive")) + 
+# so maybe select colours for the plot above and below that corresponds, i.e. the same for the same archive
+
+# The numbers for Luxembourg and Hungary are so small that we can't really see them. If we want to see them, we could filter
+dk_all_archives_lu_hu_bnf <- dk_all_archives_melt %>% 
+  filter(archive == "lwa" | archive == "szl" | archive == "bnf")
+
+ggplot(data = dk_all_archives_lu_hu_bnf, aes(x = year, y = n, group = archive, color = archive)) + 
+  geom_point() + 
+  geom_line(linewidth = 1.2) + 
+  theme_minimal() +
+  theme(legend.title=element_text(size = 16, face = "bold")) +
+  theme(legend.text=element_text(size = 14, face = "bold")) + 
+  theme(axis.text=element_text(size=14, face = "bold"),axis.title=element_text(size=16, face = "bold")) +
+  scale_y_continuous(labels = function(x) format(x, big.mark = ".", decimal.mark = ",", scientific = F)) +
+  scale_colour_manual(values = c("gold", "darkviolet", "red"), labels = c("BNF","Luxembourg Web Archive", "Hungary Web Archive")) + 
+  labs(y = "Number of domains \n", x = "\n Year", color = "Archive")
+```
+
+# 4. Top 15 TLDs in the different national archives
+## Netarkivet
+Based on statc-distinct-lvl2-per-tld-overall.
+```{r}
+# read data and add column names
+dk_lvl2_per_tld <- read.csv("data/nak-dk-statc-distinct-lvl2-per-tld-overall.csv", header=FALSE) # It has no headers, so we add the column names
+colnames(dk_lvl2_per_tld) = c("TLD","num_domains")
+
+# to see the data to decide how many TLDs to include
+head(dk_lvl2_per_tld, 20) # change the number depending on how many you want to see
+  
+# create top15 and an "Other" category with the rest
+percentage_top15 <- dk_lvl2_per_tld %>% 
+  arrange(desc(num_domains)) %>% # probably not necessary but just to make sure they are properly sorted
+  split(c(rep("top", 15), rep("rest", nrow(.) - 15))) %>% # splits into the top 15 and the rest
+  (\(s) bind_rows(s$top, data.frame(TLD = "Other", num_domains = sum(s$rest$num_domains)))) %>% # sums num_domains for all from the "other" category
+  mutate(percentage = num_domains/sum(num_domains)) # creates a column with the percentages for each TLD and the Other category 
+
+# plot with reorder to order descending based on percentage but with  
+percentage_top15 %>% ggplot(aes(x=reorder(TLD, -percentage) %>% fct_relevel("Other", after = Inf), y=percentage)) + 
+  geom_bar(stat="identity", fill="royalblue") +
+  theme_minimal() +
+  scale_y_continuous(labels = percent) +
+  labs(y = "Percentage from different TLDs \n", x = "\n TLD")  
+
+# -percentage means that the order is descending (based on num_domains)
+# Inf er for infinite, so here it means that the Other category is placed at the end
+# to plot it with Other where it is placed depending on descending num_domains, remove: %>% fct_relevel("Other", after = Inf)
+```
+
+### Alternative ways of plotting Top 15 TLDs in the different national archives
+Based on percentage_top15 generated in the previous analysis
+```{r}
+# 1st alternative: plot as bars, reorder by row_id
+
+# new dataframe, just a copy of the other
+percentage_top15_alt <- percentage_top15
+
+# create row_id matching the number of rows of the dataframe
+row_id <- seq(1, nrow(percentage_top15_alt))
+
+# add the vector to the dataframe using $ symbol.
+percentage_top15_alt$row_id = as.factor(row_id)
+
+# create a list with the TLDs to use as labels
+tld_names <- percentage_top15_alt %>% pull(TLD) 
+  # alternative: to have Other where it is placed based on num_domains percentage_top15 %>% arrange(desc(percentage)) %>% pull(TLD)
+
+# plot
+percentage_top15_alt %>% ggplot(aes(x=row_id, y=percentage)) + 
+    geom_bar(stat="identity", fill="royalblue") +
+    scale_x_discrete(labels=tld_names)
+
+# 2. alternative: plot as a stacked column - ordered alphabetically
+percentage_top15 %>% ggplot(aes(x=1, y=percentage, fill=TLD)) + 
+    geom_bar(position="fill", stat="identity") +
+    theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank()) +
+  scale_y_continuous(labels = percent)
+```
+
+# 5. Overlap analysis
+## .dk
+Based on overlaps_hosts_dk that I have manually created based on the data in netarkivet-ccdk-iadk-overlap
+###### TO DO: I have reordered the columns so they were in the opposite order of before - do so for the other csv's and remove _2 from the name 
+OR can this be done with one of Ulrich's suggestions?
+```{r}
+# read data
+overlaps_hosts_dk <- read_csv2("data/overlaps_hosts_dk_2.csv")
+
+# create long format for ggplot
+overlaps_hosts_dk_melt <- melt(overlaps_hosts_dk, 
+                        id.var="Year",
+                        measure.vars = colnames(overlaps_hosts_dk)[! colnames(overlaps_hosts_dk) %in% c("Year")],
+                        variable.name = "Archive", 
+                        value.name = "n")
+# plot
+overlaps_hosts_dk_melt %>% ggplot(aes(x=Year, y=n, fill=Archive)) +
+  geom_bar(stat="identity") +
+  theme_minimal() +
+  theme(legend.title=element_text(size = 16, face = "bold")) +
+  theme(legend.text=element_text(size = 14, face = "bold")) + 
+  theme(axis.text=element_text(size=14, face = "bold"),axis.title=element_text(size=16, face = "bold")) +
+  scale_y_continuous(labels = function(x) format(x, big.mark = ".", decimal.mark = ",", scientific = F)) +
+  scale_x_continuous(breaks = clean_domains_per_year$year) +
+  scale_fill_manual(values = c("cadetblue2","cornflowerblue","aquamarine","blue","cyan","dodgerblue","navyblue"),labels = c("Internet Archive","Common Crawl","Netarkivet","Internet Archive & Common Crawl","Netarkivet & Common Crawl","Netarkivet & Internet Archive","Netarkivet, Internet Archive & Common Crawl")) + 
+  labs(y = "Number of .dk domains \n", x = "\n Year", color = "Archive")
+```
+
+
+###  QUESTION: Do we need to plot the statc-distinct-lvl2-per-tld-per-year as well? This would show the changes over time!
+```{r}
+# read data
+dk_lvl2_per_tld_per_year <- read_csv("data/nak-dk-statc-distinct-lvl2-per-tld-per-year.csv")
+```
+
+
+# VERSION 2: Can I use lvl2 til at trække data ud til at lave df til "3. Each ccTLD across all archives"
+```{r}
+# read data using function
+lvl2_per_tld_per_year <- read_data_files("data", "*distinct-lvl2-per-tld-per-year.csv", c("n")) %>% 
+  separate(collection, c("archive", "country"), remove=FALSE) 
+
+# rename the first instance in archive (row one, column 34) to year
+lvl2_per_tld_per_year$archive[1] <- "year"
+
+# nrow(lvl2_per_tld_per_year) # number of rows
+# ncol(lvl2_per_tld_per_year) # number of columns
+
+# create dataframe for a country and clean data
+dk_across_archives <- lvl2_per_tld_per_year %>% subset(n == "dk" | archive == "year") %>% select(-c("n","collection","country")) %>% select(archive, everything())
+
+#### could all this be done before subset, so you don't have to do it for each country?
+dk_across_archives <- t(dk_across_archives) # transpose df
+column_names <- dk_across_archives[1,] # create vector from row 1
+colnames(dk_across_archives) <- column_names # use vector to assign column names
+dk_across_archives <- dk_across_archives[-c(1,31,32),] # remove row 1, 31 and 32 (row with archive names + year 2022 og 2023)  
+dk_across_archives <- data.frame(dk_across_archives)
+dk_across_archives <- dk_across_archives %>% mutate(across(everything(), trimws)) # remove whitespace, don't know why that was introduced!
+dk_across_archives <- dk_across_archives %>% mutate_at(c("bnf", "cc", "ia", "lwa", "nak", "szl"), as.numeric)
+dk_across_archives$year <- as.factor(dk_across_archives$year)
+
+# other versions
+fr_across_archives <-  subset(lvl2_per_tld_per_year_clean, tld == "fr")
+hu_across_archives <-  subset(lvl2_per_tld_per_year_clean, tld == "hu")
+lu_across_archives <-  subset(lvl2_per_tld_per_year_clean, tld == "lu")
+```
+
+
+### FORSØG på at lave analyse 3 med den nyskabte dk_across_archives 
+dk_all_archives includes the number of second-level domains with the TLD .dk from each year that are in all the archives' holdings.
+```{r}
+dk_across_archives_melt <- melt(dk_across_archives, 
+                        id.var="year",
+                        measure.vars = colnames(dk_across_archives)[! colnames(dk_across_archives) %in% c("year")],
+                        variable.name = "archive", 
+                        value.name = "n")
+# change class
+# dk_across_archives_melt$year <- as.factor(dk_across_archives_melt$year)
+# dk_across_archives_melt$archive <- as.factor(dk_across_archives_melt$archive)
+# dk_across_archives_melt$n <- as.numeric(dk_across_archives_melt$n)
+
+# plot
+ggplot(data = dk_across_archives_melt, aes(x = year, y = n, group = archive, color = archive)) + 
+  geom_point() + 
+  geom_line(linewidth = 1.2) + 
+  theme_minimal() +
+  theme(legend.title=element_text(size = 16, face = "bold")) +
+  theme(legend.text=element_text(size = 14, face = "bold")) + 
+  theme(axis.text=element_text(size=14, face = "bold"),axis.title=element_text(size=16, face = "bold")) +
+  scale_y_continuous(labels = function(x) format(x, big.mark = ".", decimal.mark = ",", scientific = F)) +
+  scale_color_brewer(palette="Spectral", labels = c("BNF","Common Crawl", "Internet Archive", "Luxembourg Web Archive", "Netarkivet", "Hungary Web Archive")) +
+  labs(y = "Number of domains \n", x = "\n Year", color = "Archive") 
+
+# alternative colours: scale_colour_manual(values = c("red", "blue", "gold", "green4", "darkviolet", "pink"), labels = c("BNF","Common Crawl", "Internet Archive", "Luxembourg Web Archive", "Netarkivet", "Hungary Web Archive")) + 
+# so maybe select colours for the plot above and below that corresponds, i.e. the same for the same archive
+
+# The numbers for Luxembourg and Hungary are so small that we can't really see them. If we want to see them, we could filter
+dk_across_archives_lu_hu_bnf <- dk_across_archives_melt %>% 
+  filter(archive == "lwa" | archive == "szl" | archive == "bnf")
+
+ggplot(data = dk_across_archives_lu_hu_bnf, aes(x = year, y = n, group = archive, color = archive)) + 
+  geom_point() + 
+  geom_line(linewidth = 1.2) + 
+  theme_minimal() +
+  theme(legend.title=element_text(size = 16, face = "bold")) +
+  theme(legend.text=element_text(size = 14, face = "bold")) + 
+  theme(axis.text=element_text(size=14, face = "bold"),axis.title=element_text(size=16, face = "bold")) +
+  scale_y_continuous(labels = function(x) format(x, big.mark = ".", decimal.mark = ",", scientific = F)) +
+  scale_colour_manual(values = c("gold", "darkviolet", "red"), labels = c("BNF","Luxembourg Web Archive", "Hungary Web Archive")) + 
+  labs(y = "Number of domains \n", x = "\n Year", color = "Archive")
+```
+
+
