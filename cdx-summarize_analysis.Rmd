@@ -62,7 +62,7 @@ To use the same colours for the same archive each time
 # Netarkivet = "red"
 # Hungary Web Archive = darkorchid3"
 
-# other colours: "darkviolet","deeppink3","royalblue3", "navyblue", "mediumpurple", "magenta", "violetred2", "orchid3"
+# other colours: "darkviolet","deeppink3","royalblue", "navyblue", "mediumpurple", "magenta", "violetred2", "orchid3"
 
 # labels = c("Bibliothèque nationale de France","Common Crawl", "Internet Archive", "Luxembourg Web Archive", "Netarkivet", "Hungary Web Archive"))
 
@@ -164,6 +164,8 @@ lu_across_archives <- lvl2_per_tld_per_year %>%
   select(-c("n","collection","country")) %>% # remove the columns mentioned
   select(archive, everything()) # move the column year to the first column
 
+# first data in 1996
+
 # data cleaning and correcting class
 lu_across_archives <- t(lu_across_archives) # transpose df
 column_names <- lu_across_archives[1,] # create vector from row 1
@@ -183,7 +185,7 @@ lu_across_archives_melt <- melt(lu_across_archives,
                         variable.name = "archive", 
                         value.name = "n")
 
-# reorder factors and plot
+# reorder factors and plot (run without scale_colour_manual first to make sure the order is correct, then add)
 lu_across_archives_melt %>% 
   mutate(archive = fct_relevel(archive, "lwa", "ia", "cc", "bnf", "szl")) %>%
   ggplot(aes(x = year, y = n, group = archive, color = archive)) + 
@@ -196,7 +198,7 @@ lu_across_archives_melt %>%
   scale_y_continuous(labels = function(x) format(x, big.mark = ".", decimal.mark = ",", scientific = F)) +
   scale_colour_manual(values = c("deeppink2","navyblue","orange2","gold","darkorchid3"), labels = c("Luxembourg Web Archive","Internet Archive","Common Crawl","Bibliothèque nationale de France","Hungary Web Archive")) +
   labs(y = "Number of domains \n", x = "\n Year", color = "Archive") 
-   
+ 
 # The numbers for BNF and Hungary are so small that we can't really see them. If we want to see them, we could filter
 lu_across_archives_melt %>% 
   filter(archive == "szl" | archive == "bnf") %>% 
@@ -211,6 +213,132 @@ lu_across_archives_melt %>%
   scale_colour_manual(values = c("gold", "darkorchid3"), labels = c("Bibliothèque nationale de France","Hungary Web Archive")) + 
   labs(y = "Number of domains \n", x = "\n Year", color = "Archive")
 ```
+
+## .fr
+TO DO: add "nak" when adding the Danish data and Netarkivet i labels
+```{r}
+# create dataframe for a country and clean data
+fr_across_archives <- lvl2_per_tld_per_year %>% 
+  subset(n == "fr" | archive == "year") %>%
+  select(-c("n","collection","country")) %>%
+  select(archive, everything())
+
+# first data in 2000
+
+# data cleaning and correcting class
+fr_across_archives <- t(fr_across_archives) # transpose df
+column_names <- fr_across_archives[1,] # create vector from row 1
+colnames(fr_across_archives) <- column_names # use vector to assign column names
+fr_across_archives <- fr_across_archives[-c(1:8,31:32),] # remove row 1-4 and 31-32 (archive names + years with no data)  
+fr_across_archives <- data.frame(fr_across_archives)
+fr_across_archives <- fr_across_archives %>% mutate(across(everything(), trimws)) # remove whitespace
+fr_across_archives <- fr_across_archives %>% mutate_at(c("bnf", "cc", "ia", "lwa", "szl"), as.numeric) # remember to add "nak" when adding the DK data
+fr_across_archives$year <- as.factor(fr_across_archives$year)
+
+# use str(fr_across_archives) to check that the years are factors and that the values are numeric
+
+# create long format for ggplot
+fr_across_archives_melt <- melt(fr_across_archives, 
+                        id.var="year",
+                        measure.vars = colnames(fr_across_archives)[! colnames(fr_across_archives) %in% c("year")],
+                        variable.name = "archive", 
+                        value.name = "n")
+
+# reorder factors and plot
+fr_across_archives_melt %>% 
+  mutate(archive = fct_relevel(archive,"bnf","ia", "cc","lwa","szl")) %>%
+  ggplot(aes(x = year, y = n, group = archive, color = archive)) + 
+  geom_point() + 
+  geom_line(linewidth = 1.2) + 
+  theme_minimal() +
+  theme(legend.title=element_text(size = 16, face = "bold")) +
+  theme(legend.text=element_text(size = 14, face = "bold")) + 
+  theme(axis.text=element_text(size=14, face = "bold"),axis.title=element_text(size=16, face = "bold")) +
+  scale_y_continuous(labels = function(x) format(x, big.mark = ".", decimal.mark = ",", scientific = F)) +
+  scale_colour_manual(values = c("gold","navyblue","orange2","deeppink2","darkorchid3"), labels = c("Bibliothèque nationale de France","Internet Archive","Common Crawl","Luxembourg Web Archive","Hungary Web Archive")) +
+  labs(y = "Number of domains \n", x = "\n Year", color = "Archive") 
+
+# The numbers for Luxembourg and Hungary are so small that we can't really see them. If we want to see them, we could filter
+fr_across_archives_melt %>% 
+  filter(archive == "lwa" | archive == "szl") %>% 
+  ggplot(aes(x = year, y = n, group = archive, color = archive)) + 
+  geom_point() + 
+  geom_line(linewidth = 1.2) + 
+  theme_minimal() +
+  theme(legend.title=element_text(size = 16, face = "bold")) +
+  theme(legend.text=element_text(size = 14, face = "bold")) + 
+  theme(axis.text=element_text(size=14, face = "bold"),axis.title=element_text(size=16, face = "bold")) +
+  scale_y_continuous(labels = function(x) format(x, big.mark = ".", decimal.mark = ",", scientific = F)) +
+  scale_colour_manual(values = c("deeppink2", "darkorchid3"), labels = c("Luxembourg Web Archive","Hungary Web Archive")) + 
+  labs(y = "Number of domains \n", x = "\n Year", color = "Archive")
+```
+
+## .hu
+TO DO: add "nak" when adding the Danish data and Netarkivet i labels
+```{r}
+# create dataframe for a country and clean data
+hu_across_archives <- lvl2_per_tld_per_year %>% 
+  subset(n == "hu" | archive == "year") %>%
+  select(-c("n","collection","country")) %>%
+  select(archive, everything())
+
+# first data in 1996
+
+# data cleaning and correcting class
+hu_across_archives <- t(hu_across_archives) # transpose df
+column_names <- hu_across_archives[1,] # create vector from row 1
+colnames(hu_across_archives) <- column_names # use vector to assign column names
+hu_across_archives <- hu_across_archives[-c(1:4,31:32),] # remove row 1-4 and 31-32 (archive names + years with no data)  
+hu_across_archives <- data.frame(hu_across_archives)
+hu_across_archives <- hu_across_archives %>% mutate(across(everything(), trimws)) # remove whitespace
+hu_across_archives <- hu_across_archives %>% mutate_at(c("bnf", "cc", "ia", "lwa", "szl"), as.numeric) # remember to add "nak" when adding the DK data
+hu_across_archives$year <- as.factor(hu_across_archives$year)
+
+# use str(hu_across_archives) to check that the years are factors and that the values are numeric
+
+# create long format for ggplot
+hu_across_archives_melt <- melt(hu_across_archives, 
+                        id.var="year",
+                        measure.vars = colnames(hu_across_archives)[! colnames(hu_across_archives) %in% c("year")],
+                        variable.name = "archive", 
+                        value.name = "n")
+
+# reorder factors and plot
+hu_across_archives_melt %>% 
+  mutate(archive = fct_relevel(archive,"szl","ia", "cc","bnf","lwa")) %>%
+  ggplot(aes(x = year, y = n, group = archive, color = archive)) + 
+  geom_point() + 
+  geom_line(linewidth = 1.2) + 
+  theme_minimal() +
+  theme(legend.title=element_text(size = 16, face = "bold")) +
+  theme(legend.text=element_text(size = 14, face = "bold")) + 
+  theme(axis.text=element_text(size=14, face = "bold"),axis.title=element_text(size=16, face = "bold")) +
+  scale_y_continuous(labels = function(x) format(x, big.mark = ".", decimal.mark = ",", scientific = F)) +
+  scale_colour_manual(values = c("darkorchid3","navyblue","orange2","gold","deeppink2"), labels = c("Hungary Web Archive","Internet Archive","Common Crawl","Bibliothèque nationale de France","Luxembourg Web Archive")) +
+  labs(y = "Number of domains \n", x = "\n Year", color = "Archive") 
+
+# The numbers for BNF and Luxembourg are so small that we can't really see them. If we want to see them, we could filter
+hu_across_archives_melt %>% 
+  filter(archive == "bnf" | archive == "lwa") %>% 
+  ggplot(aes(x = year, y = n, group = archive, color = archive)) + 
+  geom_point() + 
+  geom_line(linewidth = 1.2) + 
+  theme_minimal() +
+  theme(legend.title=element_text(size = 16, face = "bold")) +
+  theme(legend.text=element_text(size = 14, face = "bold")) + 
+  theme(axis.text=element_text(size=14, face = "bold"),axis.title=element_text(size=16, face = "bold")) +
+  scale_y_continuous(labels = function(x) format(x, big.mark = ".", decimal.mark = ",", scientific = F)) +
+  scale_colour_manual(values = c("gold", "deeppink2"), labels = c("Bibliothèque nationale de France","Luxembourg Web Archive")) + 
+  labs(y = "Number of domains \n", x = "\n Year", color = "Archive")
+```
+
+
+# Bibliothèque nationale de France = "gold"
+# Common Crawl = "orange2"
+# Internet Archive = "navyblue"
+# Luxembourg Web Archive = "deeppink2"
+# Netarkivet = "red"
+# Hungary Web Archive = darkorchid3"
 
 # .dk - WRONG DATA - REDO
 ```{r}
@@ -235,7 +363,7 @@ dk_across_archives_melt <- melt(dk_across_archives,
                         value.name = "n")
 
 #### TO DO: CHANGE ORDER IN PLOT using factor relevel, change order accordingly
-lu_across_archives_melt %>% 
+dk_across_archives_melt %>% 
   mutate(archive = fct_relevel(archive, "lwa", "ia", "cc", "bnf", "szl")) %>% 
   ggplot(aes(x = year, y = n, group = archive, color = archive)) + 
 
@@ -270,7 +398,7 @@ dk_across_archives_melt %>%
 ```
 
 # 4. Top 15 TLDs in the different national archives
-## Netarkivet
+## Netarkivet - WRONG DATA
 Based on statc-distinct-lvl2-per-tld-overall.
 ```{r}
 # read data and add column names
@@ -297,38 +425,6 @@ percentage_top15 %>% ggplot(aes(x=reorder(TLD, -percentage) %>% fct_relevel("Oth
 # -percentage means that the order is descending (based on num_domains)
 # Inf er for infinite, so here it means that the Other category is placed at the end
 # to plot it with Other where it is placed depending on descending num_domains, remove: %>% fct_relevel("Other", after = Inf)
-```
-
-### Alternative ways of plotting Top 15 TLDs in the different national archives
-Based on percentage_top15 generated in the previous analysis
-```{r}
-# 1st alternative: plot as bars, reorder by row_id
-
-# new dataframe, just a copy of the other
-percentage_top15_alt <- percentage_top15
-
-# create row_id matching the number of rows of the dataframe
-row_id <- seq(1, nrow(percentage_top15_alt))
-
-# add the vector to the dataframe using $ symbol.
-percentage_top15_alt$row_id = as.factor(row_id)
-
-# create a list with the TLDs to use as labels
-tld_names <- percentage_top15_alt %>% pull(TLD) 
-  # alternative: to have Other where it is placed based on num_domains percentage_top15 %>% arrange(desc(percentage)) %>% pull(TLD)
-
-# plot
-percentage_top15_alt %>% ggplot(aes(x=row_id, y=percentage)) + 
-    geom_bar(stat="identity", fill="royalblue") +
-    scale_x_discrete(labels=tld_names)
-
-# 2. alternative: plot as a stacked column - ordered alphabetically
-percentage_top15 %>% ggplot(aes(x=1, y=percentage, fill=TLD)) + 
-    geom_bar(position="fill", stat="identity") +
-    theme(axis.title.x=element_blank(),
-        axis.text.x=element_blank(),
-        axis.ticks.x=element_blank()) +
-  scale_y_continuous(labels = percent)
 ```
 
 # 5. Overlap analysis
