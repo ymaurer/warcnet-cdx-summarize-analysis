@@ -52,6 +52,22 @@ read_data_files <- function(folder, glob_expression, col_names) {
 }
 ```
 
+# Define colour scheme to use across the analysis
+To use the same colours for the same archive each time
+```{r}
+# Bibliothèque nationale de France = "gold"
+# Common Crawl = "orange2"
+# Internet Archive = "navyblue"
+# Luxembourg Web Archive = "deeppink2"
+# Netarkivet = "red"
+# Hungary Web Archive = darkorchid3"
+
+# other colours: "darkviolet","deeppink3","royalblue3", "navyblue", "mediumpurple", "magenta", "violetred2", "orchid3"
+
+# labels = c("Bibliothèque nationale de France","Common Crawl", "Internet Archive", "Luxembourg Web Archive", "Netarkivet", "Hungary Web Archive"))
+
+```
+
 # 1. Total number of distinct domains from all countries and archives
 Based on stata-distinct-domains-overall
 ```{r}
@@ -74,8 +90,8 @@ clean_domains_per_year <- read_data_files("data","*domains-per-year.csv", c("yea
   filter(year < 2022) %>% 
   separate(collection, c("archive", "country"), remove=FALSE)
 
-# how many years are represented for each country in each archive? 
-clean_domains_per_year %>% count(archive, country)
+# to see how many years are represented for each country in each archive 
+# clean_domains_per_year %>% count(archive, country)
 
 # collections as facets, full version
 clean_domains_per_year |>
@@ -95,7 +111,7 @@ clean_domains_per_year  %>%
   filter(archive %in% c("bnf", "lwa", "szl")) %>% ### remember to include nak!
   ggplot(aes(x=year, y=count/1000000)) +
   geom_bar(stat="identity") +
-  facet_wrap(~collection,ncol=2, labeller = labeller(collection = 
+  facet_wrap(~collection,ncol=2, labeller=labeller(collection = # ncol sets the number of columns
     c("bnf-all" = "BNF, all TLDs",
       "bnf-fr" = "BNF, only .fr",
       "lwa-all" = "LWA, all TLDs",
@@ -140,7 +156,7 @@ lvl2_per_tld_per_year$archive[1] <- "year"
 ```
 
 ## .lu
-TO DO: add "nak" when adding the Danish data
+TO DO: add "nak" when adding the Danish data and Netarkivet i labels
 ```{r}
 # create dataframe for a country and clean data
 lu_across_archives <- lvl2_per_tld_per_year %>% 
@@ -152,7 +168,7 @@ lu_across_archives <- lvl2_per_tld_per_year %>%
 lu_across_archives <- t(lu_across_archives) # transpose df
 column_names <- lu_across_archives[1,] # create vector from row 1
 colnames(lu_across_archives) <- column_names # use vector to assign column names
-lu_across_archives <- lu_across_archives[-c(1,31,32),] # remove row 1, 31 and 32 (row with archive names + year 2022 og 2023)  
+lu_across_archives <- lu_across_archives[-c(1:4,31:32),] # remove row 1-4 and 31-32 (archive names + years with no data)  
 lu_across_archives <- data.frame(lu_across_archives)
 lu_across_archives <- lu_across_archives %>% mutate(across(everything(), trimws)) # remove whitespace
 lu_across_archives <- lu_across_archives %>% mutate_at(c("bnf", "cc", "ia", "lwa", "szl"), as.numeric) # remember to add "nak" when adding the DK data
@@ -160,22 +176,17 @@ lu_across_archives$year <- as.factor(lu_across_archives$year)
 
 # use str(lu_across_archives) to check that the years are factors and that the values are numeric
 
-# first data in 1996, should the columns for 1993-95 be removed?
-```
-
-# .lu plot
-TO DO: Remember to add Netarkivet i labels
-TO DO: remove the first 3 years!
-TO DO: koble i en r chunk!
-```{r}
+# create long format for ggplot
 lu_across_archives_melt <- melt(lu_across_archives, 
                         id.var="year",
                         measure.vars = colnames(lu_across_archives)[! colnames(lu_across_archives) %in% c("year")],
                         variable.name = "archive", 
                         value.name = "n")
 
-# plot
-ggplot(lu_across_archives_melt, aes(x = year, y = n, group = archive, color = archive)) + 
+# reorder factors and plot
+lu_across_archives_melt %>% 
+  mutate(archive = fct_relevel(archive, "lwa", "ia", "cc", "bnf", "szl")) %>%
+  ggplot(aes(x = year, y = n, group = archive, color = archive)) + 
   geom_point() + 
   geom_line(linewidth = 1.2) + 
   theme_minimal() +
@@ -183,17 +194,13 @@ ggplot(lu_across_archives_melt, aes(x = year, y = n, group = archive, color = ar
   theme(legend.text=element_text(size = 14, face = "bold")) + 
   theme(axis.text=element_text(size=14, face = "bold"),axis.title=element_text(size=16, face = "bold")) +
   scale_y_continuous(labels = function(x) format(x, big.mark = ".", decimal.mark = ",", scientific = F)) +
-  scale_color_brewer(palette="Set1", labels = c("BNF","Common Crawl", "Internet Archive", "Luxembourg Web Archive", "Hungary Web Archive")) +
+  scale_colour_manual(values = c("deeppink2","navyblue","orange2","gold","darkorchid3"), labels = c("Luxembourg Web Archive","Internet Archive","Common Crawl","Bibliothèque nationale de France","Hungary Web Archive")) +
   labs(y = "Number of domains \n", x = "\n Year", color = "Archive") 
-
-# alternative colours: scale_colour_manual(values = c("red", "blue", "gold", "green4", "darkviolet", "pink"), labels = c("BNF","Common Crawl", "Internet Archive", "Luxembourg Web Archive", "Netarkivet", "Hungary Web Archive")) + 
-# so maybe select colours for the plot above and below that corresponds, i.e. the same for the same archive
-
+   
 # The numbers for BNF and Hungary are so small that we can't really see them. If we want to see them, we could filter
-lu_across_archives_hu_bnf <- lu_across_archives_melt %>% 
-  filter(archive == "szl" | archive == "bnf")
-
-ggplot(lu_across_archives_hu_bnf, aes(x = year, y = n, group = archive, color = archive)) + 
+lu_across_archives_melt %>% 
+  filter(archive == "szl" | archive == "bnf") %>% 
+  ggplot(aes(x = year, y = n, group = archive, color = archive)) + 
   geom_point() + 
   geom_line(linewidth = 1.2) + 
   theme_minimal() +
@@ -201,11 +208,11 @@ ggplot(lu_across_archives_hu_bnf, aes(x = year, y = n, group = archive, color = 
   theme(legend.text=element_text(size = 14, face = "bold")) + 
   theme(axis.text=element_text(size=14, face = "bold"),axis.title=element_text(size=16, face = "bold")) +
   scale_y_continuous(labels = function(x) format(x, big.mark = ".", decimal.mark = ",", scientific = F)) +
-  scale_colour_manual(values = c("gold", "darkviolet", "red"), labels = c("BNF","Hungary Web Archive")) + 
+  scale_colour_manual(values = c("gold", "darkorchid3"), labels = c("Bibliothèque nationale de France","Hungary Web Archive")) + 
   labs(y = "Number of domains \n", x = "\n Year", color = "Archive")
 ```
 
-# .dk - wrong data
+# .dk - WRONG DATA - REDO
 ```{r}
 # create dataframe for a country and clean data
 dk_across_archives <- lvl2_per_tld_per_year %>% subset(n == "dk" | archive == "year") %>% select(-c("n","collection","country")) %>% select(archive, everything())
@@ -227,6 +234,12 @@ dk_across_archives_melt <- melt(dk_across_archives,
                         variable.name = "archive", 
                         value.name = "n")
 
+#### TO DO: CHANGE ORDER IN PLOT using factor relevel, change order accordingly
+lu_across_archives_melt %>% 
+  mutate(archive = fct_relevel(archive, "lwa", "ia", "cc", "bnf", "szl")) %>% 
+  ggplot(aes(x = year, y = n, group = archive, color = archive)) + 
+
+#### TO DO: CHANGE COLOURS + LABELS  
 # plot
 ggplot(dk_across_archives_melt, aes(x = year, y = n, group = archive, color = archive)) + 
   geom_point() + 
@@ -239,14 +252,11 @@ ggplot(dk_across_archives_melt, aes(x = year, y = n, group = archive, color = ar
   scale_color_brewer(palette="Set1", labels = c("BNF","Common Crawl", "Internet Archive", "Luxembourg Web Archive", "Netarkivet", "Hungary Web Archive")) +
   labs(y = "Number of domains \n", x = "\n Year", color = "Archive") 
 
-# alternative colours: scale_colour_manual(values = c("red", "blue", "gold", "green4", "darkviolet", "pink"), labels = c("BNF","Common Crawl", "Internet Archive", "Luxembourg Web Archive", "Netarkivet", "Hungary Web Archive")) + 
-# so maybe select colours for the plot above and below that corresponds, i.e. the same for the same archive
-
-# The numbers for Luxembourg and Hungary are so small that we can't really see them. If we want to see them, we could filter
-dk_across_archives_lu_hu_bnf <- dk_across_archives_melt %>% 
-  filter(archive == "lwa" | archive == "szl" | archive == "bnf")
-
-ggplot(dk_across_archives_lu_hu_bnf, aes(x = year, y = n, group = archive, color = archive)) + 
+# The numbers for BNF, Luxembourg, Hungary and BNF are so small that we can't really see them. If we want to see them, we could filter
+### remember to check that colours and labels match
+dk_across_archives_melt %>% 
+  filter(archive == "lwa" | archive == "szl" | archive == "bnf") %>% 
+  ggplot(aes(x = year, y = n, group = archive, color = archive)) + 
   geom_point() + 
   geom_line(linewidth = 1.2) + 
   theme_minimal() +
@@ -254,7 +264,7 @@ ggplot(dk_across_archives_lu_hu_bnf, aes(x = year, y = n, group = archive, color
   theme(legend.text=element_text(size = 14, face = "bold")) + 
   theme(axis.text=element_text(size=14, face = "bold"),axis.title=element_text(size=16, face = "bold")) +
   scale_y_continuous(labels = function(x) format(x, big.mark = ".", decimal.mark = ",", scientific = F)) +
-  scale_colour_manual(values = c("gold", "darkviolet", "red"), labels = c("BNF","Luxembourg Web Archive", "Hungary Web Archive")) + 
+ # scale_colour_manual(values = c("gold", "deeppink2","darkorchid3"), labels = c("BNF","Luxembourg Web Archive", "Hungary Web Archive")) + 
   labs(y = "Number of domains \n", x = "\n Year", color = "Archive")
 
 ```
