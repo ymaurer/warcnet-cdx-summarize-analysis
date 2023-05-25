@@ -26,7 +26,7 @@ pacman::p_load(tidyverse,here,fs,ggplot2,reshape2,scales)
 
 # Set working directory
 ```{r}
-setwd("/Users/au148767/Projects/cdx-summarize/")
+setwd("/Users/au148767/Projects/warcnet-cdx-summarize-analysis/")
 ```
 
 # Create read files function
@@ -50,12 +50,17 @@ read_data_files <- function(folder, glob_expression, col_names) {
 Based on stata-distinct-domains-overall
 ```{r}
 # read files with distinct domains overall (only one number)
-df_distinct_domains_overall <- read_data_files("data", "*distinct-domains-overall.csv", c("n")) %>% 
+distinct_domains_overall <- read_data_files("data", "*distinct-domains-overall.csv", c("n")) %>% 
   separate(collection, c("archive", "country"), remove=FALSE) # create columns with archive and country based on file name
+
+# write to csv (optional)
+# write_csv(distinct_domains_overall, "results/distinct_domains_overall.csv")
 ```
 
 # 2. Number of distinct domains in all archives across years shown as facets
 Based on stata-distinct-domains-per-year
+TO DO: add nak data
+TO DO: find a way to sort the facets so they appear in the correct order 
 ```{r}
 # read files and remove years that are errors
 clean_domains_per_year <- read_data_files("data","*domains-per-year.csv", c("year", "count")) %>%  
@@ -66,33 +71,52 @@ clean_domains_per_year <- read_data_files("data","*domains-per-year.csv", c("yea
 # how many years are represented for each country in each archive? 
 clean_domains_per_year %>% count(archive, country)
 
-# collections as facets
+# collections as facets, full version
 clean_domains_per_year |>
   ggplot(aes(x=year, y=count/1000000)) +
   geom_bar(stat="identity") +
   facet_wrap(~collection) +
   theme_minimal() +
-  theme(legend.title=element_text(size = 18, face = "bold")) +
-  theme(legend.text=element_text(size = 16, face = "bold")) + 
-  theme(axis.text=element_text(size=16, face = "bold"),axis.title=element_text(size=16, face = "bold")) +
-  theme(strip.text.x = element_text(size = 12, face = "bold"), strip.text.y = element_text(size = 12, face = "bold")) +
+  theme(legend.title=element_text(size = 16, face = "bold")) +
+  theme(legend.text=element_text(size = 14, face = "bold")) + 
+  theme(axis.text=element_text(size=14, face = "bold"),axis.title=element_text(size=14, face = "bold")) +
+  theme(strip.text.x = element_text(size = 11, face = "bold"), strip.text.y = element_text(size = 11, face = "bold")) +
   scale_y_continuous(labels = function(x) format(x, big.mark = ".", decimal.mark = ",", scientific = F)) +
-  labs(y = "Number of domains in millions \n", x = "") 
-# TO DO: find out how to change labels
+  labs(y = "Number of domains in millions \n", x = "")
 
-# can also be used with filter: filter(archive=="bnf") for only bnf OR filter(archive!="bnf") for all archives except bnf (!= means not equal to)
-# to filter on more than once thing, use fx filter(archive %in% c("cc", "ia")), see example:
+# collections as facets, only national archives
+clean_domains_per_year  %>%
+  filter(archive %in% c("bnf", "lwa", "szl")) %>% ### remember to include nak!
+  ggplot(aes(x=year, y=count/1000000)) +
+  geom_bar(stat="identity") +
+  facet_wrap(~collection,ncol=2, labeller = labeller(collection = 
+    c("bnf-all" = "BNF, all TLDs",
+      "bnf-fr" = "BNF, only .fr",
+      "lwa-all" = "LWA, all TLDs",
+      "lwa-lu" = "LWA, only .lu",
+      "szl-all" = "SZL, all TLDs",
+      "szl-hu" = "SZL, only .hu"))) +
+  theme_minimal() +
+  scale_y_continuous(labels = function(x) format(x, big.mark = ".", decimal.mark = ",", scientific = F)) +
+  labs(y = "Number of domains in millions \n", x = "")
 
-# clean_domains_per_year  %>%
-#  filter(archive %in% c("cc", "ia")) %>% 
-#  ggplot(aes(x=year, y=count/1000000)) +
-#  geom_bar(stat="identity") +
-#  facet_wrap(~collection) +
-#  theme_minimal() +
-#  scale_y_continuous(labels = function(x) format(x, big.mark = ".", decimal.mark = ",", scientific = F))
+# collections as facets, only ccTLDs
+clean_domains_per_year %>%
+  filter(country!="all") %>%
+  filter(country!="dk") %>% # as long as we don't have the Danish data, delete filter when we have the data
+  mutate(across(collection, factor, levels=c("bnf-fr","lwa-lu","szl-hu", "ia-fr", "ia-lu", "ia-hu","cc-fr", "cc-lu", "cc-hu"))) %>%
+  ggplot(aes(x=year, y=count/1000000)) +
+  geom_bar(stat="identity") +
+  facet_wrap(~collection,ncol=3) +
+  theme_minimal() +
+  scale_y_continuous(labels = function(x) format(x, big.mark = ".", decimal.mark = ",", scientific = F)) +
+  labs(y = "Number of domains in millions \n", x = "")
+# TO DO: add labels
+  
+# for only one condition: filter(archive=="bnf") for only bnf OR filter(archive!="bnf") for all archives except bnf (!= means not equal to)
 ```
 
-# 3. Each ccTLD across all archives
+# 3. Each ccTLD across all archives - OLD VERSION
 ## .dk
 Based on a file I have manually created called dk_all_archives, which is based on statc-distinct-lvl2-per-tld-per-year.
 I have taken the .dk column from each of the files named statc-distinct-lvl2-per-tld-per-year, which means that 
@@ -290,7 +314,7 @@ ggplot(data = dk_across_archives_melt, aes(x = year, y = n, group = archive, col
   theme(legend.text=element_text(size = 14, face = "bold")) + 
   theme(axis.text=element_text(size=14, face = "bold"),axis.title=element_text(size=16, face = "bold")) +
   scale_y_continuous(labels = function(x) format(x, big.mark = ".", decimal.mark = ",", scientific = F)) +
-  scale_color_brewer(palette="Spectral", labels = c("BNF","Common Crawl", "Internet Archive", "Luxembourg Web Archive", "Netarkivet", "Hungary Web Archive")) +
+  scale_color_brewer(palette="Set1", labels = c("BNF","Common Crawl", "Internet Archive", "Luxembourg Web Archive", "Netarkivet", "Hungary Web Archive")) +
   labs(y = "Number of domains \n", x = "\n Year", color = "Archive") 
 
 # alternative colours: scale_colour_manual(values = c("red", "blue", "gold", "green4", "darkviolet", "pink"), labels = c("BNF","Common Crawl", "Internet Archive", "Luxembourg Web Archive", "Netarkivet", "Hungary Web Archive")) + 
