@@ -4,4 +4,6 @@
 .Ruserdata
 data/
 results/
+data_overlaps/
+plots/
 .DS_Store
