@@ -17,6 +17,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Load libraries
 ```{r}
+# do we need an install.packages?? 
+
 pacman::p_load(tidyverse,here,fs,ggplot2,reshape2,scales)
 # here() makes it easy to access data and files in the project directory thereby avoiding 
 # using pull paths
@@ -66,6 +68,8 @@ To use the same colours for the same archive each time
 
 # labels = c("Bibliothèque nationale de France","Common Crawl", "Internet Archive", "Luxembourg Web Archive", "Netarkivet", "Hungary Web Archive"))
 
+# National Széchényi Library, NSZL Web Archive, OSZK Webarchívum
+# Les archives de l’internet, BNF
 ```
 
 # 1. Total number of distinct domains from all countries and archives
@@ -641,8 +645,35 @@ overlaps_hosts_dk_melt %>% ggplot(aes(x=Year, y=n, fill=Archive)) +
   labs(y = "Number of .dk domains \n", x = "\n Year", color = "Archive")
 ```
 
+# Distinct TLD per year in the national archives (not BNF)
+Based on distinct-tld-per-year.csv
+Because we only need the files from NAK, LWA & SZL (the ones with all), the others have been removed from the data folder
+```{r}
+# read files and add column names + column with archive name for
+szl_tld_per_year <- read.csv("data/szl-all-statb-distinct-tld-per-year.csv", header = FALSE) 
+colnames(szl_tld_per_year) <- c("year","n_tlds") # name columns
+szl_tld_per_year <- szl_tld_per_year %>%
+  mutate(archive="szl") # add column with archive name
 
+lwa_tld_per_year <- read.csv("data/lwa-all-statb-distinct-tld-per-year.csv", header = FALSE) 
+colnames(lwa_tld_per_year) <- c("year","n_tlds") # name columns
+lwa_tld_per_year <- lwa_tld_per_year %>%
+  mutate(archive="lwa") # add column with archive name
 
+distinct_tlds_per_year <- rbind(szl_tld_per_year,lwa_tld_per_year)
+
+ggplot(distinct_tlds_per_year, aes(x=year, y=n_tlds, group=archive, colour=archive)) + 
+  geom_line(linewidth = 1.2) +
+  theme_minimal() +
+  theme(legend.title=element_text(size = 14, face = "bold")) +
+  theme(legend.text=element_text(size = 12, face = "bold")) + 
+  theme(axis.text=element_text(size=12, face = "bold"),axis.title=element_text(size=12, face = "bold")) +
+  scale_y_continuous(labels = function(x) format(x, big.mark = ".", decimal.mark = ",", scientific = F)) +
+  scale_x_continuous(breaks = distinct_tlds_per_year$year) +
+  scale_colour_manual(values = c("deeppink2","darkorchid3"), labels = c("Luxembourg Web Archive","Hungary Web Archive")) +
+  labs(y = "Number of TLDs \n", x = "\n Year", color = "Archive") 
+
+```
 
 ###  QUESTION: Do we need to plot the statc-distinct-lvl2-per-tld-per-year as well? This would show the changes over time!
 ```{r}
