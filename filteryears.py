@@ -23,12 +23,20 @@ def dowork(args):
                     if m1:
                         print(EXPLICITIPV4 + ' ' + json.dumps(newyears))
                     else:
-                        print(hostname + ' ' + json.dumps(newyears))
+                        if args.lvl2:
+                            parts = hostname.split('.')
+                            if len(parts) > 1:
+                                print(parts[-2] + '.' + parts[-1] + ' ' + json.dumps(newyears))
+                            else:
+                                print(hostname + ' ' + json.dumps(newyears))    
+                        else:
+                            print(hostname + ' ' + json.dumps(newyears))
 
 if __name__ == '__main__':
     parser = ArgumentParser(description='Filter years from summary file')
     parser.add_argument('--minyear', action="store", default=1993, help='Minimum Year to include')
     parser.add_argument('--maxyear', action="store", default=2023, help='Maximum Year to include')
+    parser.add_argument('--lvl2', action='store_true', help='only keep level 2 hostname info')
     parser.add_argument('file', nargs=1, help='summary file')
     args = parser.parse_args()
     dowork(args)
