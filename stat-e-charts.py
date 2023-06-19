@@ -22,7 +22,7 @@ def read_averages(file, field, delim=',', minimum=1):
             if len(row) >= 5 and row[1] == field and row[0] != 'Total':
                 year = int(row[0])
                 if year >= min_year and year <= max_year and int(row[3]) >= minimum and int(row[4]) > 0:
-                    output[int(row[0])] = int(row[4])
+                    output[int(row[0])] = int(row[3])
     return output
 
 def all_averages(dir, field, delim=',', minimum=1):
