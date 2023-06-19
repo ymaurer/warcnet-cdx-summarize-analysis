@@ -12,6 +12,7 @@ statb_tlds = set()
 statb_tld_py = {}
 statc_domains = {}
 statc_domains_py = {}
+state_mimes = {}
 
 def calc_stata(lvl2, tld, years):
     stata_domains.add(lvl2 + '.' + tld)
@@ -75,6 +76,30 @@ def output_statc(args):
                     fil.write(f'{args.delimiter}0')
             fil.write('\n')
 
+def calc_state(lvl2, tld, years):
+    for y in years:
+        iy = int(y)
+        if not iy in state_mimes:
+            state_mimes[iy] = {}
+        for mime in years[y]:
+            if not mime in state_mimes[iy]:
+                state_mimes[iy][mime] = years[y][mime]
+            else:
+                state_mimes[iy][mime] += years[y][mime]
+
+def output_state(args):
+    fname = args.prefix
+    with open(fname + "-state-sizes-per-mime-per-year.csv", "w") as fil:
+        for year in sorted(state_mimes):
+            for mime in sorted(state_mimes[year]):
+                number = 'n_' + mime[2:]
+                if mime[0:2] == 's_':
+                    if state_mimes[year][number] > 0:
+                        avg = int(state_mimes[year][mime] / state_mimes[year][number])
+                    else:
+                        avg = 0
+                    fil.write(f'{year}{args.delimiter}{mime[2:]}{args.delimiter}{state_mimes[year][mime]}{args.delimiter}{state_mimes[year][number]}{args.delimiter}{avg}\n')
+
 def dowork(args):
     with open(args.file[0]) as fil:
         for line in fil:
@@ -89,9 +114,11 @@ def dowork(args):
                 calc_stata(lvl2, tld, years)
                 calc_statb(lvl2, tld, years)
                 calc_statc(lvl2, tld, years)
+                calc_state(lvl2, tld, years)
     output_stata(args)
     output_statb(args)
     output_statc(args)
+    output_state(args)
 
 
 if __name__ == '__main__':
