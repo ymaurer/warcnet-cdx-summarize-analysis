@@ -28,10 +28,16 @@ pacman::p_load(tidyverse,here,fs,ggplot2,reshape2,scales)
 
 # Set working directory
 ```{r}
-setwd("/Users/au148767/Projects/warcnet-cdx-summarize-analysis/")
+setwd("/Users/au148767/R_Projects/warcnet-cdx-summarize-analysis/")
 ```
 
-# List files (optional)
+### TO DO: Explain how we get from the summary files to the files with stat a, b, c and the overlap analyses. Are all the stats done with the warcnetstats.py script?
+
+# Comments on the data
+Most of the data used are what we have called statistics a, b and c (created using warcnetstats.py script?). The statistics are the number of distinct domains, distinct top-level domains and distinct second-level domains, and for each we include the total number (called "overall") and the number per year. There are six different web archives involved: four national archives and two international archives. For the national archives, we have the three statistics both for everything in the archive ("all") and for just the nation's ccTLD (dk, fr, hu, and lu, respectively), resulting in a total of 12 files per archive. For the international archives, we have each of the four ccTLDs mentioned, resulting in 24 files per archive. This results in a total of 96 files.
+However, not all the statistics are relevant for each archive. The stats from the international archives only include one tld, hence it does not make sense to look at statistics b (tld) for IA and CC. In the same way, statistics b for the ccTLD version of the national archives are irrelevant. This removes 16 + 8 = 24 files.
+We also have to think about duplicates, since some of the files include numbers that are the same or part of the same. Statistics c (lvl2-per-tld) from the ccTLD version of the national archive stats are already included in the file with the "overall" data from the same archive, so we need to remove these files to not get duplicates, when we do analysis based on stat c (here, Analysis 3: Each ccTLD across all archives). This removes 8 files.
+For the overlap analysis, we have 4 files (how are these created?), leaving a total of 68 files.
 ```{r}
 # if you need to see a list of the files in the data folder
 list.files("data/")
