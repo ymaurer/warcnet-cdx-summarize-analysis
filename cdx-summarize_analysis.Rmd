@@ -200,12 +200,13 @@ lu_across_archives_melt %>%
 
 # Subset with the numbers for BNF, NAK and SZL (first data in 2005)
 # sort colors and labels in the right order (s for subset)
-line_colors_lu_subset <- c("#838383","#c9c9c9","#e5e5e5")
-line_labels_lu_subset <- c("Bibliothèque nationale de France", "Netarkivet", "Hungary Web Archive")
-line_types_lu_subset <- c("twodash","dotted","longdash")
+line_colors_lu_subset <- c("#c9c9c9","#e5e5e5","#838383")
+line_labels_lu_subset <- c("Netarkivet", "Hungary Web Archive","Bibliothèque nationale de France")
+line_types_lu_subset <- c("dotted","longdash","twodash")
 
 lu_across_archives_melt %>% 
-  filter(archive == "szl" | archive == "bnf" | archive == "nak") %>%
+  filter(archive == "nak" | archive == "szl" | archive == "bnf") %>%
+  mutate(archive = fct_relevel(archive,"nak","szl","bnf")) %>%
 #  filter(!year %in% c("1996","1997","1998","1999","2000","2001","2002","2003","2004")) %>%
   filter(n>0) %>% # remove the years where there are no data
   ggplot(aes(x = year, y = n, group = archive)) +
@@ -241,7 +242,7 @@ colnames(fr_across_archives) <- column_names # use vector to assign column names
 fr_across_archives <- fr_across_archives[-1,] # remove row 1 (archive names)  
 fr_across_archives <- data.frame(fr_across_archives)
 fr_across_archives <- fr_across_archives %>% mutate(across(everything(), trimws)) # remove whitespace
-fr_across_archives <- fr_across_archives %>% mutate_at(c("bnf","cc","ia","lwa","nak","szl"), as.numeric) # remember to add "nak" when adding the DK data
+fr_across_archives <- fr_across_archives %>% mutate_at(c("bnf","cc","ia","lwa","nak","szl"), as.numeric)
 fr_across_archives$year <- as.factor(fr_across_archives$year)
 
 # use str(fr_across_archives) to check that the years are factors and that the values are numeric
@@ -277,12 +278,13 @@ fr_across_archives_melt %>%
 
 # Subset with the numbers for LWA, NAK and SZL (first data in 2003)
 # sort colors and labels in the right order
-line_colors_fr_subset <- c("#aeaeae","#c9c9c9","#e5e5e5")
-line_labels_fr_subset <- c("Luxembourg Web Archive", "Netarkivet", "Hungary Web Archive")
-line_types_fr_subset <- c("solid","dotted","longdash")
+line_colors_fr_subset <- c("#c9c9c9","#aeaeae","#e5e5e5")
+line_labels_fr_subset <- c("Netarkivet", "Luxembourg Web Archive", "Hungary Web Archive")
+line_types_fr_subset <- c("dotted","solid","longdash")
 
 fr_across_archives_melt %>% 
-  filter(archive == "lwa" | archive == "nak" | archive == "szl") %>%
+  filter(archive == "nak" | archive == "lwa" | archive == "szl") %>%
+  mutate(archive = fct_relevel(archive,"nak","lwa","szl")) %>%
 #  filter(!year %in% c("1996","1997","1998","1999","2000","2001","2002","2003","2004")) %>%
   filter(n>0) %>% # remove the years where there are no data
   ggplot(aes(x = year, y = n, group = archive)) +
@@ -302,7 +304,6 @@ fr_across_archives_melt %>%
 ```
 
 ## 3 .hu
-TO DO: add "nak" when adding the Danish data and Netarkivet i labels
 ```{r}
 # create dataframe for a country and clean data
 hu_across_archives <- lvl2_per_tld_per_year %>% 
@@ -316,10 +317,10 @@ hu_across_archives <- lvl2_per_tld_per_year %>%
 hu_across_archives <- t(hu_across_archives) # transpose df
 column_names <- hu_across_archives[1,] # create vector from row 1
 colnames(hu_across_archives) <- column_names # use vector to assign column names
-hu_across_archives <- hu_across_archives[-c(1:4,31:32),] # remove row 1-4 and 31-32 (archive names + years with no data)  
+hu_across_archives <- hu_across_archives[-c(1:4),] # remove row 1-4 (archive names + years with no data)  
 hu_across_archives <- data.frame(hu_across_archives)
 hu_across_archives <- hu_across_archives %>% mutate(across(everything(), trimws)) # remove whitespace
-hu_across_archives <- hu_across_archives %>% mutate_at(c("bnf", "cc", "ia", "lwa", "szl"), as.numeric) # remember to add "nak" when adding the DK data
+hu_across_archives <- hu_across_archives %>% mutate_at(c("bnf", "cc", "ia", "lwa","nak","szl"), as.numeric)
 hu_across_archives$year <- as.factor(hu_across_archives$year)
 
 # use str(hu_across_archives) to check that the years are factors and that the values are numeric
@@ -331,35 +332,53 @@ hu_across_archives_melt <- melt(hu_across_archives,
                         variable.name = "archive", 
                         value.name = "n")
 
+# sort colors and labels in the right order
+line_colors_hu <- c("#e5e5e5","#000000","#3a3a3a","#838383","#aeaeae","#c9c9c9")
+line_labels_hu <- c("Hungary Web Archive","Internet Archive", "Common Crawl", "Bibliothèque nationale de France", "Luxembourg Web Archive", "Netarkivet")
+line_types_hu <- c("longdash","dashed","dotdash","twodash","solid","dotted")
+
 # reorder factors and plot
 hu_across_archives_melt %>% 
-  mutate(archive = fct_relevel(archive,"szl","ia", "cc","bnf","lwa")) %>%
-  ggplot(aes(x = year, y = n, group = archive, color = archive)) + 
-  geom_point() + 
-  geom_line(linewidth = 1.2) + 
+  mutate(archive = fct_relevel(archive,"szl","ia","cc","bnf","lwa","nak")) %>%
+  ggplot(aes(x = year, y = n, group = archive)) + 
+  geom_line(aes(linetype=archive,color = archive), linewidth = 1.2) + 
   theme_minimal() +
-  theme(legend.title=element_text(size = 14, face = "bold")) +
-  theme(legend.text=element_text(size = 12, face = "bold")) + 
-  theme(axis.text=element_text(size=12, face = "bold"),axis.title=element_text(size=12, face = "bold")) +
+  theme(legend.position="bottom",
+        legend.title=element_text(size = 12, face = "bold"),
+        legend.text=element_text(size = 12, face = "bold"),
+        legend.key.width=unit(2,"cm"),
+        axis.text=element_text(size=12, face = "bold"),
+        axis.title=element_text(size=12, face = "bold")) +
   scale_y_continuous(labels = function(x) format(x, big.mark = ".", decimal.mark = ",", scientific = F)) +
-  scale_colour_manual(values = c("darkorchid3","navyblue","orange2","gold","deeppink2"), labels = c("Hungary Web Archive","Internet Archive","Common Crawl","Bibliothèque nationale de France","Luxembourg Web Archive")) +
-  labs(y = "Number of domains \n", x = "\n Year", color = "Archive") 
+  scale_linetype_manual(values = line_types_hu, labels = line_labels_hu) +
+  scale_color_manual(values = line_colors_hu, labels = line_labels_hu) +
+  labs(y = "Number of .hu domains \n", x = "\n Year", color = "Archive", linetype = "Archive")
 
-# The numbers for BNF and Luxembourg are so small that we can't really see them. If we want to see them, we could filter
-# first data in 2016
+# Subset with the numbers for LWA, NAK and BNF (first data in 2001)
+# sort colors and labels in the right order
+line_colors_hu_subset <- c("#c9c9c9","#aeaeae","#838383")
+line_labels_hu_subset <- c("Netarkivet", "Luxembourg Web Archive", "Bibliothèque nationale de France")
+line_types_hu_subset <- c("dotted","solid","twodash")
+
 hu_across_archives_melt %>% 
-  filter(archive == "bnf" | archive == "lwa") %>%
-  filter(year %in% c("2015","2016", "2017","2018", "2019", "2020", "2021", "2022")) %>%
-  ggplot(aes(x = year, y = n, group = archive, color = archive)) + 
-  geom_point() + 
-  geom_line(linewidth = 1.2) + 
+  filter(archive == "nak" | archive == "lwa" | archive == "bnf") %>%
+  mutate(archive = fct_relevel(archive,"nak","lwa","bnf")) %>%
+#  filter(!year %in% c("1996","1997","1998","1999","2000","2001","2002","2003","2004")) %>%
+  filter(n>0) %>% # remove the years where there are no data
+  ggplot(aes(x = year, y = n, group = archive)) +
+  geom_point(color="darkgrey") + # added to be able to see BNF 
+  geom_line(aes(linetype=archive,color = archive), linewidth = 1.2) +
   theme_minimal() +
-  theme(legend.title=element_text(size = 14, face = "bold")) +
-  theme(legend.text=element_text(size = 12, face = "bold")) + 
-  theme(axis.text=element_text(size=12, face = "bold"),axis.title=element_text(size=12, face = "bold")) +
+  theme(legend.position="bottom",
+        legend.title=element_text(size = 12, face = "bold"),
+        legend.text=element_text(size = 12, face = "bold"),
+        legend.key.width=unit(2,"cm"),
+        axis.text=element_text(size=12, face = "bold"),
+        axis.title=element_text(size=12, face = "bold")) +
   scale_y_continuous(labels = function(x) format(x, big.mark = ".", decimal.mark = ",", scientific = F)) +
-  scale_colour_manual(values = c("gold", "deeppink2"), labels = c("Bibliothèque nationale de France","Luxembourg Web Archive")) + 
-  labs(y = "Number of domains \n", x = "\n Year", color = "Archive")
+  scale_linetype_manual(values = line_types_hu_subset, labels = line_labels_hu_subset) +
+  scale_color_manual(values = line_colors_hu_subset, labels = line_labels_hu_subset) +
+  labs(y = "Number of .hu domains \n", x = "\n Year", color = "Archive", linetype = "Archive")
 ```
 
 
