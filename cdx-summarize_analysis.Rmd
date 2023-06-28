@@ -303,6 +303,84 @@ fr_across_archives_melt %>%
   labs(y = "Number of .fr domains \n", x = "\n Year", color = "Archive", linetype = "Archive")
 ```
 
+## 3 .dk
+```{r}
+# create dataframe for a country and clean data
+dk_across_archives <- lvl2_per_tld_per_year %>% 
+  subset(n == "dk" | archive == "year") %>%
+  select(-c("n","collection","country")) %>%
+  select(archive, everything())
+
+# first data in 1995
+
+# data cleaning and correcting class
+dk_across_archives <- t(dk_across_archives) # transpose df
+column_names <- dk_across_archives[1,] # create vector from row 1
+colnames(dk_across_archives) <- column_names # use vector to assign column names
+dk_across_archives <- dk_across_archives[-c(1:3),] # remove row 1-4 (archive names + years with no data)  
+dk_across_archives <- data.frame(dk_across_archives)
+dk_across_archives <- dk_across_archives %>% mutate(across(everything(), trimws)) # remove whitespace
+dk_across_archives <- dk_across_archives %>% mutate_at(c("bnf", "cc", "ia", "lwa","nak","szl"), as.numeric)
+dk_across_archives$year <- as.factor(dk_across_archives$year)
+
+# use str(dk_across_archives) to check that the years are factors and that the values are numeric
+
+# create long format for ggplot
+dk_across_archives_melt <- melt(dk_across_archives, 
+                        id.var="year",
+                        measure.vars = colnames(dk_across_archives)[! colnames(dk_across_archives) %in% c("year")],
+                        variable.name = "archive", 
+                        value.name = "n")
+
+# sort colors and labels in the right order
+line_colors_dk <- c("#c9c9c9","#000000","#3a3a3a","#838383","#aeaeae","#e5e5e5")
+line_labels_dk <- c("Netarkivet","Internet Archive","Common Crawl","Bibliothèque nationale de France","Luxembourg Web Archive","Hungary Web Archive")
+line_types_dk <- c("dotted","dashed","dotdash","twodash","solid","longdash")
+
+# reorder factors and plot
+dk_across_archives_melt %>% 
+  mutate(archive = fct_relevel(archive,"nak","ia","cc","bnf","lwa","szl")) %>%
+  ggplot(aes(x = year, y = n, group = archive)) + 
+  geom_line(aes(linetype=archive,color = archive), linewidth = 1.2) + 
+  theme_minimal() +
+  theme(legend.position="bottom",
+        legend.title=element_text(size = 12, face = "bold"),
+        legend.text=element_text(size = 12, face = "bold"),
+        legend.key.width=unit(2,"cm"),
+        axis.text=element_text(size=12, face = "bold"),
+        axis.title=element_text(size=12, face = "bold")) +
+  scale_y_continuous(labels = function(x) format(x, big.mark = ".", decimal.mark = ",", scientific = F)) +
+  scale_linetype_manual(values = line_types_dk, labels = line_labels_dk) +
+  scale_color_manual(values = line_colors_dk, labels = line_labels_dk) +
+  labs(y = "Number of .dk domains \n", x = "\n Year", color = "Archive", linetype = "Archive")
+
+# Subset with the numbers for LWA, BNF and SZL (first data in 2001)
+# sort colors and labels in the right order
+line_colors_dk_subset <- c("#aeaeae","#e5e5e5","#838383")
+line_labels_dk_subset <- c("Luxembourg Web Archive","Hungary Web Archive","Bibliothèque nationale de France")
+line_types_dk_subset <- c("solid","longdash","twodash")
+
+dk_across_archives_melt %>% 
+  filter(archive == "lwa" | archive == "szl" | archive == "bnf") %>%
+  mutate(archive = fct_relevel(archive,"lwa","szl","bnf")) %>%
+#  filter(!year %in% c("1996","1997","1998","1999","2000","2001","2002","2003","2004")) %>%
+  filter(n>0) %>% # remove the years where there are no data
+  ggplot(aes(x = year, y = n, group = archive)) +
+  geom_point(color="darkgrey") + # added to be able to see BNF 
+  geom_line(aes(linetype=archive,color = archive), linewidth = 1.2) +
+  theme_minimal() +
+  theme(legend.position="bottom",
+        legend.title=element_text(size = 12, face = "bold"),
+        legend.text=element_text(size = 12, face = "bold"),
+        legend.key.width=unit(2,"cm"),
+        axis.text=element_text(size=12, face = "bold"),
+        axis.title=element_text(size=12, face = "bold")) +
+  scale_y_continuous(labels = function(x) format(x, big.mark = ".", decimal.mark = ",", scientific = F)) +
+  scale_linetype_manual(values = line_types_dk_subset, labels = line_labels_dk_subset) +
+  scale_color_manual(values = line_colors_dk_subset, labels = line_labels_dk_subset) +
+  labs(y = "Number of .dk domains \n", x = "\n Year", color = "Archive", linetype = "Archive")
+```
+
 ## 3 .hu
 ```{r}
 # create dataframe for a country and clean data
@@ -379,71 +457,6 @@ hu_across_archives_melt %>%
   scale_linetype_manual(values = line_types_hu_subset, labels = line_labels_hu_subset) +
   scale_color_manual(values = line_colors_hu_subset, labels = line_labels_hu_subset) +
   labs(y = "Number of .hu domains \n", x = "\n Year", color = "Archive", linetype = "Archive")
-```
-
-
-# Bibliothèque nationale de France = "gold"
-# Common Crawl = "orange2"
-# Internet Archive = "navyblue"
-# Luxembourg Web Archive = "deeppink2"
-# Netarkivet = "red"
-# Hungary Web Archive = "darkorchid3"
-
-## 3 .dk - WRONG DATA - REDO
-```{r}
-# create dataframe for a country and clean data
-dk_across_archives <- lvl2_per_tld_per_year %>% subset(n == "dk" | archive == "year") %>% select(-c("n","collection","country")) %>% select(archive, everything())
-
-# data cleaning and correcting class
-dk_across_archives <- t(dk_across_archives) # transpose df
-column_names <- dk_across_archives[1,] # create vector from row 1
-colnames(dk_across_archives) <- column_names # use vector to assign column names
-dk_across_archives <- dk_across_archives[-c(1,31,32),] # remove row 1, 31 and 32 (row with archive names + year 2022 og 2023)  
-dk_across_archives <- data.frame(dk_across_archives)
-dk_across_archives <- dk_across_archives %>% mutate(across(everything(), trimws)) # remove whitespace, don't know why that was introduced!
-dk_across_archives <- dk_across_archives %>% mutate_at(c("bnf", "cc", "ia", "lwa", "nak", "szl"), as.numeric)
-dk_across_archives$year <- as.factor(dk_across_archives$year)
-
-# create long format for ggplot
-dk_across_archives_melt <- melt(dk_across_archives, 
-                        id.var="year",
-                        measure.vars = colnames(dk_across_archives)[! colnames(dk_across_archives) %in% c("year")],
-                        variable.name = "archive", 
-                        value.name = "n")
-
-#### TO DO: CHANGE ORDER IN PLOT using factor relevel, change order accordingly
-dk_across_archives_melt %>% 
-  mutate(archive = fct_relevel(archive, "lwa", "ia", "cc", "bnf", "szl")) %>% 
-  ggplot(aes(x = year, y = n, group = archive, color = archive)) + 
-
-#### TO DO: CHANGE COLOURS + LABELS  
-# plot
-ggplot(dk_across_archives_melt, aes(x = year, y = n, group = archive, color = archive)) + 
-  geom_point() + 
-  geom_line(linewidth = 1.2) + 
-  theme_minimal() +
-  theme(legend.title=element_text(size = 16, face = "bold")) +
-  theme(legend.text=element_text(size = 14, face = "bold")) + 
-  theme(axis.text=element_text(size=14, face = "bold"),axis.title=element_text(size=16, face = "bold")) +
-  scale_y_continuous(labels = function(x) format(x, big.mark = ".", decimal.mark = ",", scientific = F)) +
-  scale_color_brewer(palette="Set1", labels = c("BNF","Common Crawl", "Internet Archive", "Luxembourg Web Archive", "Netarkivet", "Hungary Web Archive")) +
-  labs(y = "Number of domains \n", x = "\n Year", color = "Archive") 
-
-# The numbers for BNF, Luxembourg, Hungary and BNF are so small that we can't really see them. If we want to see them, we could filter
-### remember to check that colours and labels match
-dk_across_archives_melt %>% 
-  filter(archive == "lwa" | archive == "szl" | archive == "bnf") %>% 
-  ggplot(aes(x = year, y = n, group = archive, color = archive)) + 
-  geom_point() + 
-  geom_line(linewidth = 1.2) + 
-  theme_minimal() +
-  theme(legend.title=element_text(size = 16, face = "bold")) +
-  theme(legend.text=element_text(size = 14, face = "bold")) + 
-  theme(axis.text=element_text(size=14, face = "bold"),axis.title=element_text(size=16, face = "bold")) +
-  scale_y_continuous(labels = function(x) format(x, big.mark = ".", decimal.mark = ",", scientific = F)) +
- # scale_colour_manual(values = c("gold", "deeppink2","darkorchid3"), labels = c("BNF","Luxembourg Web Archive", "Hungary Web Archive")) + 
-  labs(y = "Number of domains \n", x = "\n Year", color = "Archive")
-
 ```
 
 # 4. Top 15 TLDs in the different national archives
