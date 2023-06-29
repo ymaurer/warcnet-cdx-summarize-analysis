@@ -12,9 +12,9 @@ NB: Change chunk input to inline in order to include them in the report if knitt
 
 # Load libraries
 ```{r}
-# install.packages(c("pacman","tidyverse","here","fs","ggplot2","reshape2","scales"))
+# install.packages(c("pacman","tidyverse","here","fs","ggplot2","reshape2","scales","ggpattern"))
 
-pacman::p_load(tidyverse,here,fs,ggplot2,reshape2,scales)
+pacman::p_load(tidyverse,here,fs,ggplot2,reshape2,scales,ggpattern)
 # here() makes it easy to access data and files in the project directory thereby avoiding 
 # using pull paths
 # fs is for file system stuff, e.g., dir_ls
@@ -54,11 +54,11 @@ read_data_files <- function(folder, glob_expression, col_names) {
 
 # Colors & linetypes
 "Internet Archive" : "#000000" : "dashed"
-"Common Crawl" : "#3a3a3a" : "dotdash"
+"Common Crawl" : "#e5e5e5" : "solid" 
 "Bibliothèque nationale de France" : "#838383" : "twodash"
-"Luxembourg Web Archive" : "#aeaeae" : "solid"
+"Luxembourg Web Archive" : "#aeaeae" : "dotdash"
 "Netarkivet" : "#c9c9c9" : "dotted"
-"Hungary Web Archive" : "#e5e5e5" : "longdash"
+"Hungary Web Archive" : "#3a3a3a" : "longdash"
 
 # 1. Total number of distinct domains from all countries and archives
 Based on stata-distinct-domains-overall
@@ -175,9 +175,9 @@ lu_across_archives_melt <- melt(lu_across_archives,
                         value.name = "n")
 
 # sort colors and labels in the right order
-line_colors_lu <- c("#aeaeae","#000000","#3a3a3a","#838383","#c9c9c9","#e5e5e5")
+line_colors_lu <- c("#aeaeae","#000000","#e5e5e5","#838383","#c9c9c9","#3a3a3a")
 line_labels_lu <- c("Luxembourg Web Archive", "Internet Archive", "Common Crawl", "Bibliothèque nationale de France", "Netarkivet", "Hungary Web Archive")
-line_types_lu <- c("solid","dashed","dotdash","twodash","dotted","longdash")
+line_types_lu <- c("dotdash","dashed","solid","twodash","dotted","longdash")
 
 # reorder factors and plot (run without scale_colour_manual first to make sure the order is correct, then add)
 lu_across_archives_melt %>%
@@ -200,7 +200,7 @@ lu_across_archives_melt %>%
 
 # Subset with the numbers for BNF, NAK and SZL (first data in 2005)
 # sort colors and labels in the right order (s for subset)
-line_colors_lu_subset <- c("#c9c9c9","#e5e5e5","#838383")
+line_colors_lu_subset <- c("#c9c9c9","#3a3a3a","#838383")
 line_labels_lu_subset <- c("Netarkivet", "Hungary Web Archive","Bibliothèque nationale de France")
 line_types_lu_subset <- c("dotted","longdash","twodash")
 
@@ -255,9 +255,9 @@ fr_across_archives_melt <- melt(fr_across_archives,
                         value.name = "n")
 
 # sort colors and labels in the right order
-line_colors_fr <- c("#838383","#000000","#3a3a3a","#aeaeae","#c9c9c9","#e5e5e5")
+line_colors_fr <- c("#838383","#000000","#e5e5e5","#aeaeae","#c9c9c9","#3a3a3a")
 line_labels_fr <- c("Bibliothèque nationale de France", "Internet Archive", "Common Crawl", "Luxembourg Web Archive", "Netarkivet", "Hungary Web Archive")
-line_types_fr <- c("twodash","dashed","dotdash","solid","dotted","longdash")
+line_types_fr <- c("twodash","dashed","solid","dotdash","dotted","longdash")
 
 # reorder factors and plot
 fr_across_archives_melt %>% 
@@ -278,9 +278,9 @@ fr_across_archives_melt %>%
 
 # Subset with the numbers for LWA, NAK and SZL (first data in 2003)
 # sort colors and labels in the right order
-line_colors_fr_subset <- c("#c9c9c9","#aeaeae","#e5e5e5")
+line_colors_fr_subset <- c("#c9c9c9","#aeaeae","#3a3a3a")
 line_labels_fr_subset <- c("Netarkivet", "Luxembourg Web Archive", "Hungary Web Archive")
-line_types_fr_subset <- c("dotted","solid","longdash")
+line_types_fr_subset <- c("dotted","dotdash","longdash")
 
 fr_across_archives_melt %>% 
   filter(archive == "nak" | archive == "lwa" | archive == "szl") %>%
@@ -333,9 +333,9 @@ dk_across_archives_melt <- melt(dk_across_archives,
                         value.name = "n")
 
 # sort colors and labels in the right order
-line_colors_dk <- c("#c9c9c9","#000000","#3a3a3a","#838383","#aeaeae","#e5e5e5")
+line_colors_dk <- c("#c9c9c9","#000000","#e5e5e5","#838383","#aeaeae","#3a3a3a")
 line_labels_dk <- c("Netarkivet","Internet Archive","Common Crawl","Bibliothèque nationale de France","Luxembourg Web Archive","Hungary Web Archive")
-line_types_dk <- c("dotted","dashed","dotdash","twodash","solid","longdash")
+line_types_dk <- c("dotted","dashed","solid","twodash","dotdash","longdash")
 
 # reorder factors and plot
 dk_across_archives_melt %>% 
@@ -356,9 +356,9 @@ dk_across_archives_melt %>%
 
 # Subset with the numbers for LWA, BNF and SZL (first data in 2001)
 # sort colors and labels in the right order
-line_colors_dk_subset <- c("#aeaeae","#e5e5e5","#838383")
+line_colors_dk_subset <- c("#aeaeae","#3a3a3a","#838383")
 line_labels_dk_subset <- c("Luxembourg Web Archive","Hungary Web Archive","Bibliothèque nationale de France")
-line_types_dk_subset <- c("solid","longdash","twodash")
+line_types_dk_subset <- c("dotdash","longdash","twodash")
 
 dk_across_archives_melt %>% 
   filter(archive == "lwa" | archive == "szl" | archive == "bnf") %>%
@@ -411,9 +411,9 @@ hu_across_archives_melt <- melt(hu_across_archives,
                         value.name = "n")
 
 # sort colors and labels in the right order
-line_colors_hu <- c("#e5e5e5","#000000","#3a3a3a","#838383","#aeaeae","#c9c9c9")
+line_colors_hu <- c("#3a3a3a","#000000","#e5e5e5","#838383","#aeaeae","#c9c9c9")
 line_labels_hu <- c("Hungary Web Archive","Internet Archive", "Common Crawl", "Bibliothèque nationale de France", "Luxembourg Web Archive", "Netarkivet")
-line_types_hu <- c("longdash","dashed","dotdash","twodash","solid","dotted")
+line_types_hu <- c("longdash","dashed","solid","twodash","dotdash","dotted")
 
 # reorder factors and plot
 hu_across_archives_melt %>% 
@@ -436,7 +436,7 @@ hu_across_archives_melt %>%
 # sort colors and labels in the right order
 line_colors_hu_subset <- c("#c9c9c9","#aeaeae","#838383")
 line_labels_hu_subset <- c("Netarkivet", "Luxembourg Web Archive", "Bibliothèque nationale de France")
-line_types_hu_subset <- c("dotted","solid","twodash")
+line_types_hu_subset <- c("dotted","dotdash","twodash")
 
 hu_across_archives_melt %>% 
   filter(archive == "nak" | archive == "lwa" | archive == "bnf") %>%
@@ -459,30 +459,33 @@ hu_across_archives_melt %>%
   labs(y = "Number of .hu domains \n", x = "\n Year", color = "Archive", linetype = "Archive")
 ```
 
-# 4. Top 15 TLDs in the different national archives
-## Netarkivet - WRONG DATA
+# 4. Top 20 TLDs in the different national archives
 Based on statc-distinct-lvl2-per-tld-overall.
+
+## 4 Netarkivet
 ```{r}
 # read data and add column names
-dk_lvl2_per_tld <- read.csv("data/nak-dk-statc-distinct-lvl2-per-tld-overall.csv", header=FALSE) # It has no headers, so we add the column names
+dk_lvl2_per_tld <- read.csv("data/nak-all-statc-distinct-lvl2-per-tld-overall.csv", header=FALSE) # It has no headers, so we add the column names
 colnames(dk_lvl2_per_tld) = c("TLD","num_domains")
 
 # to see the data to decide how many TLDs to include
 head(dk_lvl2_per_tld, 20) # change the number depending on how many you want to see
   
-# create top15 and an "Other" category with the rest
-percentage_top15 <- dk_lvl2_per_tld %>% 
+# create top20 and an "Other" category with the rest
+percentage_top20_dk <- dk_lvl2_per_tld %>% 
   arrange(desc(num_domains)) %>% # probably not necessary but just to make sure they are properly sorted
-  split(c(rep("top", 15), rep("rest", nrow(.) - 15))) %>% # splits into the top 15 and the rest
+  split(c(rep("top", 20), rep("rest", nrow(.) - 20))) %>% # splits into the top 20 and the rest
   (\(s) bind_rows(s$top, data.frame(TLD = "Other", num_domains = sum(s$rest$num_domains)))) %>% # sums num_domains for all from the "other" category
   mutate(percentage = num_domains/sum(num_domains)) # creates a column with the percentages for each TLD and the Other category 
 
 # plot with reorder to order descending based on percentage but with  
-percentage_top15 %>% ggplot(aes(x=reorder(TLD, -percentage) %>% fct_relevel("Other", after = Inf), y=percentage)) + 
-  geom_bar(stat="identity", fill="royalblue") +
+percentage_top20_dk %>% 
+  ggplot(aes(x=reorder(TLD, -percentage) %>%
+               fct_relevel("Other", after = Inf), y=percentage)) + 
+  geom_bar(stat="identity", fill="#c9c9c9") +
   theme_minimal() +
   scale_y_continuous(labels = percent) +
-  labs(y = "Percentage from different TLDs \n", x = "\n TLD")  
+  labs(y = "Percentage from top 20 TLDs in Netarkivet \n", x = "\n TLD")  
 
 # -percentage means that the order is descending (based on num_domains)
 # Inf er for infinite, so here it means that the Other category is placed at the end
@@ -502,16 +505,16 @@ head(lwa_lvl2_per_tld, 20) # change the number depending on how many you want to
 # create top20 and an "Other" category with the rest
 percentage_top20 <- lwa_lvl2_per_tld %>% 
   arrange(desc(num_domains)) %>% # probably not necessary but just to make sure they are properly sorted
-  split(c(rep("top", 20), rep("rest", nrow(.) - 20))) %>% # splits into the top 15 and the rest
+  split(c(rep("top", 20), rep("rest", nrow(.) - 20))) %>% # splits into the top 20 and the rest
   (\(s) bind_rows(s$top, data.frame(TLD = "Other", num_domains = sum(s$rest$num_domains)))) %>% # sums num_domains for all from the "other" category
   mutate(percentage = num_domains/sum(num_domains)) # creates a column with the percentages for each TLD and the Other category 
 
 # plot with reorder to order descending based on percentage but with  
 percentage_top20 %>% ggplot(aes(x=reorder(TLD, -percentage) %>% fct_relevel("Other", after = Inf), y=percentage)) + 
-  geom_bar(stat="identity", fill="deeppink2") +
+  geom_bar(stat="identity", fill="#aeaeae") +
   theme_minimal() +
   scale_y_continuous(labels = percent) +
-  labs(y = "Percentage from different TLDs \n", x = "\n TLD")  
+  labs(y = "Percentage from top 20 TLDs in LWA \n", x = "\n TLD")  
 
 # -percentage means that the order is descending (based on num_domains)
 # Inf er for infinite, so here it means that the Other category is placed at the end
@@ -531,16 +534,16 @@ head(bnf_lvl2_per_tld, 20) # change the number depending on how many you want to
 # create top20 and an "Other" category with the rest
 percentage_top20 <- bnf_lvl2_per_tld %>% 
   arrange(desc(num_domains)) %>% # probably not necessary but just to make sure they are properly sorted
-  split(c(rep("top", 20), rep("rest", nrow(.) - 20))) %>% # splits into the top 15 and the rest
+  split(c(rep("top", 20), rep("rest", nrow(.) - 20))) %>% # splits into the top 20 and the rest
   (\(s) bind_rows(s$top, data.frame(TLD = "Other", num_domains = sum(s$rest$num_domains)))) %>% # sums num_domains for all from the "other" category
   mutate(percentage = num_domains/sum(num_domains)) # creates a column with the percentages for each TLD and the Other category 
 
 # plot with reorder to order descending based on percentage but with  
 percentage_top20 %>% ggplot(aes(x=reorder(TLD, -percentage) %>% fct_relevel("Other", after = Inf), y=percentage)) + 
-  geom_bar(stat="identity", fill="gold") +
+  geom_bar(stat="identity", fill="#838383") +
   theme_minimal() +
   scale_y_continuous(labels = percent) +
-  labs(y = "Percentage from different TLDs \n", x = "\n TLD")  
+  labs(y = "Percentage from top 20 TLDs in BNF \n", x = "\n TLD")  
 
 # -percentage means that the order is descending (based on num_domains)
 # Inf er for infinite, so here it means that the Other category is placed at the end
@@ -560,50 +563,63 @@ head(szl_lvl2_per_tld, 20) # change the number depending on how many you want to
 # create top20 and an "Other" category with the rest
 percentage_top20 <- szl_lvl2_per_tld %>% 
   arrange(desc(num_domains)) %>% # probably not necessary but just to make sure they are properly sorted
-  split(c(rep("top", 20), rep("rest", nrow(.) - 20))) %>% # splits into the top 15 and the rest
+  split(c(rep("top", 20), rep("rest", nrow(.) - 20))) %>% # splits into the top 20 and the rest
   (\(s) bind_rows(s$top, data.frame(TLD = "Other", num_domains = sum(s$rest$num_domains)))) %>% # sums num_domains for all from the "other" category
   mutate(percentage = num_domains/sum(num_domains)) # creates a column with the percentages for each TLD and the Other category 
 
 # plot with reorder to order descending based on percentage but with  
 percentage_top20 %>% ggplot(aes(x=reorder(TLD, -percentage) %>% fct_relevel("Other", after = Inf), y=percentage)) + 
-  geom_bar(stat="identity", fill="darkorchid3") +
+  geom_bar(stat="identity", fill="#3a3a3a") +
   theme_minimal() +
   scale_y_continuous(labels = percent) +
-  labs(y = "Percentage from different TLDs \n", x = "\n TLD")  
+  labs(y = "Percentage from top 20 TLDs in SZL \n", x = "\n TLD")  
 
 # -percentage means that the order is descending (based on num_domains)
 # Inf er for infinite, so here it means that the Other category is placed at the end
 # to plot it with Other where it is placed depending on descending num_domains, remove: %>% fct_relevel("Other", after = Inf)
 ```
 
-# 5. Overlap analysis
-## LWA
+# 5. Overlap analysis ###### NOT DONE!!
 Based on overlaps_hosts_lwa
+
+# Colors & linetypes
+"Internet Archive" :  : "dashed"
+"Common Crawl" : "#e5e5e5" : "solid"
+"Bibliothèque nationale de France" : "#838383" : "twodash"
+"Luxembourg Web Archive" : "#aeaeae" : "dotdash"
+"Netarkivet" : "#c9c9c9" : "dotted"
+"Hungary Web Archive" : "#3a3a3a" : "longdash"
+
+
+## LWA
 ```{r}
 # read data
-overlaps_hosts_lwa <- read_csv2("data_overlaps/overlaps_hosts_lwa.csv")
+overlaps_hosts_lu <- read_csv2("data/overlaps_hosts_lu.csv")
 
 # create long format for ggplot
-overlaps_hosts_lwa_melt <- melt(overlaps_hosts_lwa, 
+overlaps_hosts_lu_melt <- melt(overlaps_hosts_lu, 
                         id.var="Year",
                         measure.vars = colnames(overlaps_hosts_lwa)[! colnames(overlaps_hosts_lwa) %in% c("Year")],
                         variable.name = "Archive", 
                         value.name = "n")
 # plot
-overlaps_hosts_lwa_melt %>% ggplot(aes(x=Year, y=n, fill=Archive)) +
+overlaps_hosts_lu_melt %>% 
+  ggplot(aes(x=Year, y=n, fill=Archive)) +
   geom_bar(stat="identity") +
   theme_minimal() +
-  theme(legend.position="bottom") +
-  theme(legend.title=element_text(size = 14, face = "bold")) +
-  theme(legend.text=element_text(size = 12, face = "bold")) + 
-  theme(axis.text=element_text(size=12, face = "bold"),axis.title=element_text(size=12, face = "bold")) +
+  theme(legend.position="bottom",
+        legend.title=element_text(size = 14, face = "bold"),
+        legend.text=element_text(size = 12, face = "bold"), 
+        axis.text=element_text(size=12, face = "bold"),
+        axis.title=element_text(size=12, face = "bold")) +
   scale_y_continuous(labels = function(x) format(x, big.mark = ".", decimal.mark = ",", scientific = F)) +
-  scale_x_continuous(breaks = clean_domains_per_year$year) +
-  scale_fill_manual(values = c("orange2","navyblue","deeppink2","aquamarine","cadetblue2","cornflowerblue","cyan"),
-  labels = c("Common Crawl","Internet Archive","LWA","Internet Archive & Common Crawl","LWA & Common Crawl","LWA & Internet Archive","LWA & Internet Archive & Common Crawl")) + 
+  scale_x_continuous(breaks = overlaps_hosts_lu_melt$year) +
+#  scale_fill_manual(values = c("#e5e5e5","#000000","#aeaeae","aquamarine","cadetblue2","cornflowerblue","cyan"), labels = c("Common Crawl","Internet Archive","LWA","Internet Archive & Common Crawl","LWA & Common Crawl","LWA & Internet Archive","LWA & Internet Archive & Common Crawl")) +
+  scale_pattern_manual(values=c("stripe","stripe","stripe","stripe","crosshatch","weave","wave")) +
+  guides(fill=guide_legend(nrow=3,byrow=FALSE)) +
   labs(y = "Number of .dk domains \n", x = "\n Year", color = "Archive")
-
 ```
+
 
 ## BNF
 Based on overlaps_hosts_bnf
@@ -652,24 +668,10 @@ overlaps_hosts_szl_melt %>% ggplot(aes(x=Year, y=n, fill=Archive)) +
   theme(axis.text=element_text(size=12, face = "bold"),axis.title=element_text(size=12, face = "bold")) +
   scale_y_continuous(labels = function(x) format(x, big.mark = ".", decimal.mark = ",", scientific = F)) +
   scale_x_continuous(breaks = overlaps_hosts_szl$year) +
-  scale_fill_manual(values = c("#aeaeae","#000000","#3a3a3a","#838383","#c9c9c9","#e5e5e5", "#121212")) +
+  scale_fill_manual(values = c("#aeaeae","#000000","#e5e5e5","#838383","#c9c9c9","#3a3a3a", "#121212")) +
 #  scale_fill_manual(values = c("orange2","navyblue","darkorchid3","aquamarine","cadetblue2","cornflowerblue","cyan"), labels = c("Common Crawl","Internet Archive","SZL","Internet Archive & Common Crawl","SZL & Common Crawl","SZL & Internet Archive","SZL & Internet Archive & Common Crawl")) + 
   labs(y = "Number of .dk domains \n", x = "\n Year", color = "Archive")
 ```
-
-# Bibliothèque nationale de France = "gold"
-# Common Crawl = "orange2"
-# Internet Archive = "navyblue"
-# Luxembourg Web Archive = "deeppink2"
-# Netarkivet = "red"
-# Hungary Web Archive = "darkorchid3"
-
-# Internet Archive + Common crawl: "aquamarine"
-# National archive + Common crawl: "cadetblue2"
-# National archive + Internet Archive: "cornflowerblue"
-# National archive + Internet Archive + Common crawl: "cyan"
-
-# "cadetblue2","cornflowerblue","aquamarine","blue","cyan","dodgerblue","navyblue"
 
 ## .dk - WRONG DATA!
 ```{r}
@@ -695,33 +697,64 @@ overlaps_hosts_dk_melt %>% ggplot(aes(x=Year, y=n, fill=Archive)) +
   labs(y = "Number of .dk domains \n", x = "\n Year", color = "Archive")
 ```
 
-# Distinct TLD per year in the national archives (not BNF)
-Based on distinct-tld-per-year.csv
-Because we only need the files from NAK, LWA & SZL (the ones with all), the others have been removed from the data folder
+# 6. Distinct TLD per year in the national archives (not BNF)
+Based on distinct-tld-per-year.csv (the ones with all)
 ```{r}
 # read files and add column names + column with archive name for
-szl_tld_per_year <- read.csv("data/szl-all-statb-distinct-tld-per-year.csv", header = FALSE) 
-colnames(szl_tld_per_year) <- c("year","n_tlds") # name columns
-szl_tld_per_year <- szl_tld_per_year %>%
-  mutate(archive="szl") # add column with archive name
+szl_tld_year <- read.csv("data/szl-all-statb-distinct-tld-per-year.csv", header = FALSE) 
+colnames(szl_tld_year) <- c("year","n_tlds") # name columns
+szl_tld_per_year <- szl_tld_year %>%
+  mutate(archive="szl") # add column with archive name, new name so the former can be used for printing the combined df below, too
 
-lwa_tld_per_year <- read.csv("data/lwa-all-statb-distinct-tld-per-year.csv", header = FALSE) 
-colnames(lwa_tld_per_year) <- c("year","n_tlds") # name columns
-lwa_tld_per_year <- lwa_tld_per_year %>%
+lwa_tld_year <- read.csv("data/lwa-all-statb-distinct-tld-per-year.csv", header = FALSE) 
+colnames(lwa_tld_year) <- c("year","n_tlds") # name columns
+lwa_tld_per_year <- lwa_tld_year %>%
   mutate(archive="lwa") # add column with archive name
 
-distinct_tlds_per_year <- rbind(szl_tld_per_year,lwa_tld_per_year)
+nak_tld_year <- read.csv("data/nak-all-statb-distinct-tld-per-year.csv", header = FALSE) 
+colnames(nak_tld_year) <- c("year","n_tlds") # name columns
+nak_tld_per_year <- nak_tld_year %>%
+  mutate(archive="nak") # add column with archive name
 
-ggplot(distinct_tlds_per_year, aes(x=year, y=n_tlds, group=archive, colour=archive)) + 
-  geom_line(linewidth = 1.2) +
+distinct_tlds_per_year <- rbind(szl_tld_per_year,lwa_tld_per_year,nak_tld_per_year)
+
+# sort colors and labels in the right order
+line_colors_tlds_per_year <- c("#c9c9c9","#aeaeae","#3a3a3a")
+line_labels_tlds_per_year <- c("Netarkivet", "Luxembourg Web Archive", "Hungary Web Archive")
+line_types_tlds_per_year <- c("dotted","dotdash","longdash")
+
+distinct_tlds_per_year %>%
+  mutate(archive = fct_relevel(archive,"nak","lwa","szl")) %>%
+  ggplot(aes(x=year, y=n_tlds, group=archive)) + 
+  geom_line(aes(linetype=archive,color = archive), linewidth = 1.2) +
   theme_minimal() +
-  theme(legend.title=element_text(size = 14, face = "bold")) +
-  theme(legend.text=element_text(size = 12, face = "bold")) + 
-  theme(axis.text=element_text(size=12, face = "bold"),axis.title=element_text(size=12, face = "bold")) +
+  theme(legend.position="bottom",
+        legend.title=element_text(size = 12, face = "bold"),
+        legend.text=element_text(size = 12, face = "bold"),
+        legend.key.width=unit(2,"cm"),
+        axis.text=element_text(size=12, face = "bold"),
+        axis.title=element_text(size=12, face = "bold")) +
   scale_y_continuous(labels = function(x) format(x, big.mark = ".", decimal.mark = ",", scientific = F)) +
   scale_x_continuous(breaks = distinct_tlds_per_year$year) +
-  scale_colour_manual(values = c("deeppink2","darkorchid3"), labels = c("Luxembourg Web Archive","Hungary Web Archive")) +
-  labs(y = "Number of TLDs \n", x = "\n Year", color = "Archive") 
+  scale_linetype_manual(values = line_types_tlds_per_year, labels = line_labels_tlds_per_year) +
+  scale_color_manual(values = line_colors_tlds_per_year, labels = line_labels_tlds_per_year) +
+  labs(y = "Number of TLDs \n", x = "\n Year", color = "Archive", linetype = "Archive")
+
+# write to csv (optional)
+# write_csv(distinct_tlds_per_year, "results/distinct_tlds_per_year.csv")
+
+
+szl_tld_per_year <- read.csv("data/szl-all-statb-distinct-tld-per-year.csv", header = FALSE) 
+colnames(szl_tld_per_year) <- c("year","szl") # name columns
+
+lwa_tld_per_year <- read.csv("data/lwa-all-statb-distinct-tld-per-year.csv", header = FALSE) 
+colnames(lwa_tld_per_year) <- c("year","lwa") # name columns
+
+nak_tld_per_year <- read.csv("data/nak-all-statb-distinct-tld-per-year.csv", header = FALSE) 
+colnames(nak_tld_per_year) <- c("year","nak") # name columns
+
+distinct_tlds_per_year_df_prelim <- merge(szl_tld_per_year,lwa_tld_per_year,by = "year", all=TRUE)
+distinct_tlds_per_year_df <- merge(distinct_tlds_per_year_df_prelim,nak_tld_per_year,by = "year", all=TRUE)
 
 ```
 
@@ -733,24 +766,6 @@ dk_lvl2_per_tld_per_year <- read_csv("data/nak-dk-statc-distinct-lvl2-per-tld-pe
 
 EXTRA
 
-# Define colour scheme to use across the analysis
-To use the same colours for the same archive each time
-```{r}
-# Bibliothèque nationale de France = "gold"
-# Common Crawl = "orange2"
-# Internet Archive = "navyblue"
-# Luxembourg Web Archive = "deeppink2"
-# Netarkivet = "red"
-# Hungary Web Archive = "darkorchid3"
-
-# other colours: "darkviolet","deeppink3","royalblue", "navyblue", "mediumpurple", "magenta", "violetred2", "orchid3"
-
-# labels = c("Bibliothèque nationale de France","Common Crawl", "Internet Archive", "Luxembourg Web Archive", "Netarkivet", "Hungary Web Archive"))
-
-# National Széchényi Library, NSZL Web Archive, OSZK Webarchívum
-# Les archives de l’internet, BNF
-```
-
 
 ###TEST COLOUR SCHEME
 ```{r}
@@ -759,11 +774,11 @@ names(cdx_colours) <- c("IA","CC","NAK","LWA","BNF","SZL")
 
 # hex: 
 #000000
-#3a3a3a	(58,58,58)
+#e5e5e5	(58,58,58)
 #838383	(131,131,131)
 #aeaeae	(174,174,174)
 #c9c9c9	(201,201,201)
-#e5e5e5
+#3a3a3a
 ```
 
 # Knit to create pdf report
