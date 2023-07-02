@@ -153,9 +153,10 @@ lu_across_archives <- lvl2_per_tld_per_year %>%
   select(-c("n","collection","country")) %>% # remove the columns mentioned
   select(archive, everything()) # move the column year to the first column
 
-# first data in 1996
+# write to csv (optional)
+# write_csv(lu_across_archives, "results/lu_across_archives.csv")
 
-# data cleaning and correcting class
+# data cleaning and correcting class (first data in 1996)
 lu_across_archives <- t(lu_across_archives) # transpose df
 column_names <- lu_across_archives[1,] # create vector from row 1
 colnames(lu_across_archives) <- column_names # use vector to assign column names
@@ -233,9 +234,10 @@ fr_across_archives <- lvl2_per_tld_per_year %>%
   select(-c("n","collection","country")) %>%
   select(archive, everything())
 
-# first data in 1993
+# write to csv (optional)
+# write_csv(fr_across_archives, "results/fr_across_archives.csv")
 
-# data cleaning and correcting class
+# data cleaning and correcting class (first data in 1993)
 fr_across_archives <- t(fr_across_archives) # transpose df
 column_names <- fr_across_archives[1,] # create vector from row 1
 colnames(fr_across_archives) <- column_names # use vector to assign column names
@@ -311,9 +313,10 @@ dk_across_archives <- lvl2_per_tld_per_year %>%
   select(-c("n","collection","country")) %>%
   select(archive, everything())
 
-# first data in 1995
+# write to csv (optional)
+write_csv(dk_across_archives, "results/dk_across_archives.csv")
 
-# data cleaning and correcting class
+# data cleaning and correcting class (first data in 1995)
 dk_across_archives <- t(dk_across_archives) # transpose df
 column_names <- dk_across_archives[1,] # create vector from row 1
 colnames(dk_across_archives) <- column_names # use vector to assign column names
@@ -389,9 +392,10 @@ hu_across_archives <- lvl2_per_tld_per_year %>%
   select(-c("n","collection","country")) %>%
   select(archive, everything())
 
-# first data in 1996
+# write to csv (optional)
+# write_csv(hu_across_archives, "results/hu_across_archives.csv")
 
-# data cleaning and correcting class
+# data cleaning and correcting class (first data in 1996)
 hu_across_archives <- t(hu_across_archives) # transpose df
 column_names <- hu_across_archives[1,] # create vector from row 1
 colnames(hu_across_archives) <- column_names # use vector to assign column names
@@ -472,14 +476,14 @@ colnames(dk_lvl2_per_tld) = c("TLD","num_domains")
 head(dk_lvl2_per_tld, 20) # change the number depending on how many you want to see
   
 # create top20 and an "Other" category with the rest
-percentage_top20_dk <- dk_lvl2_per_tld %>% 
+percentage_top20_nak <- dk_lvl2_per_tld %>% 
   arrange(desc(num_domains)) %>% # probably not necessary but just to make sure they are properly sorted
   split(c(rep("top", 20), rep("rest", nrow(.) - 20))) %>% # splits into the top 20 and the rest
   (\(s) bind_rows(s$top, data.frame(TLD = "Other", num_domains = sum(s$rest$num_domains)))) %>% # sums num_domains for all from the "other" category
   mutate(percentage = num_domains/sum(num_domains)) # creates a column with the percentages for each TLD and the Other category 
 
 # plot with reorder to order descending based on percentage but with  
-percentage_top20_dk %>% 
+percentage_top20_nak %>% 
   ggplot(aes(x=reorder(TLD, -percentage) %>%
                fct_relevel("Other", after = Inf), y=percentage)) + 
   geom_bar(stat="identity", fill="#c9c9c9") +
@@ -490,6 +494,8 @@ percentage_top20_dk %>%
 # -percentage means that the order is descending (based on num_domains)
 # Inf er for infinite, so here it means that the Other category is placed at the end
 # to plot it with Other where it is placed depending on descending num_domains, remove: %>% fct_relevel("Other", after = Inf)
+
+# write_csv(percentage_top20_nak, "results/percentage_top20_nak.csv")
 ```
 
 ## 4 Luxembourg Web Archive
@@ -503,22 +509,20 @@ colnames(lwa_lvl2_per_tld) = c("TLD","num_domains")
 head(lwa_lvl2_per_tld, 20) # change the number depending on how many you want to see
   
 # create top20 and an "Other" category with the rest
-percentage_top20 <- lwa_lvl2_per_tld %>% 
+percentage_top20_lwa <- lwa_lvl2_per_tld %>% 
   arrange(desc(num_domains)) %>% # probably not necessary but just to make sure they are properly sorted
   split(c(rep("top", 20), rep("rest", nrow(.) - 20))) %>% # splits into the top 20 and the rest
   (\(s) bind_rows(s$top, data.frame(TLD = "Other", num_domains = sum(s$rest$num_domains)))) %>% # sums num_domains for all from the "other" category
   mutate(percentage = num_domains/sum(num_domains)) # creates a column with the percentages for each TLD and the Other category 
 
 # plot with reorder to order descending based on percentage but with  
-percentage_top20 %>% ggplot(aes(x=reorder(TLD, -percentage) %>% fct_relevel("Other", after = Inf), y=percentage)) + 
+percentage_top20_lwa %>% ggplot(aes(x=reorder(TLD, -percentage) %>% fct_relevel("Other", after = Inf), y=percentage)) + 
   geom_bar(stat="identity", fill="#aeaeae") +
   theme_minimal() +
   scale_y_continuous(labels = percent) +
   labs(y = "Percentage from top 20 TLDs in LWA \n", x = "\n TLD")  
 
-# -percentage means that the order is descending (based on num_domains)
-# Inf er for infinite, so here it means that the Other category is placed at the end
-# to plot it with Other where it is placed depending on descending num_domains, remove: %>% fct_relevel("Other", after = Inf)
+# write_csv(percentage_top20_lwa, "results/percentage_top20_lwa.csv")
 ```
 
 ## 4 BNF
@@ -532,22 +536,20 @@ colnames(bnf_lvl2_per_tld) = c("TLD","num_domains")
 head(bnf_lvl2_per_tld, 20) # change the number depending on how many you want to see
   
 # create top20 and an "Other" category with the rest
-percentage_top20 <- bnf_lvl2_per_tld %>% 
+percentage_top20_bnf <- bnf_lvl2_per_tld %>% 
   arrange(desc(num_domains)) %>% # probably not necessary but just to make sure they are properly sorted
   split(c(rep("top", 20), rep("rest", nrow(.) - 20))) %>% # splits into the top 20 and the rest
   (\(s) bind_rows(s$top, data.frame(TLD = "Other", num_domains = sum(s$rest$num_domains)))) %>% # sums num_domains for all from the "other" category
   mutate(percentage = num_domains/sum(num_domains)) # creates a column with the percentages for each TLD and the Other category 
 
 # plot with reorder to order descending based on percentage but with  
-percentage_top20 %>% ggplot(aes(x=reorder(TLD, -percentage) %>% fct_relevel("Other", after = Inf), y=percentage)) + 
+percentage_top20_bnf %>% ggplot(aes(x=reorder(TLD, -percentage) %>% fct_relevel("Other", after = Inf), y=percentage)) + 
   geom_bar(stat="identity", fill="#838383") +
   theme_minimal() +
   scale_y_continuous(labels = percent) +
   labs(y = "Percentage from top 20 TLDs in BNF \n", x = "\n TLD")  
 
-# -percentage means that the order is descending (based on num_domains)
-# Inf er for infinite, so here it means that the Other category is placed at the end
-# to plot it with Other where it is placed depending on descending num_domains, remove: %>% fct_relevel("Other", after = Inf)
+# write_csv(percentage_top20_bnf, "results/percentage_top20_bnf.csv")
 ```
 
 ## 4 SZL
@@ -561,22 +563,20 @@ colnames(szl_lvl2_per_tld) = c("TLD","num_domains")
 head(szl_lvl2_per_tld, 20) # change the number depending on how many you want to see
   
 # create top20 and an "Other" category with the rest
-percentage_top20 <- szl_lvl2_per_tld %>% 
+percentage_top20_szl <- szl_lvl2_per_tld %>% 
   arrange(desc(num_domains)) %>% # probably not necessary but just to make sure they are properly sorted
   split(c(rep("top", 20), rep("rest", nrow(.) - 20))) %>% # splits into the top 20 and the rest
   (\(s) bind_rows(s$top, data.frame(TLD = "Other", num_domains = sum(s$rest$num_domains)))) %>% # sums num_domains for all from the "other" category
   mutate(percentage = num_domains/sum(num_domains)) # creates a column with the percentages for each TLD and the Other category 
 
 # plot with reorder to order descending based on percentage but with  
-percentage_top20 %>% ggplot(aes(x=reorder(TLD, -percentage) %>% fct_relevel("Other", after = Inf), y=percentage)) + 
+percentage_top20_szl %>% ggplot(aes(x=reorder(TLD, -percentage) %>% fct_relevel("Other", after = Inf), y=percentage)) + 
   geom_bar(stat="identity", fill="#3a3a3a") +
   theme_minimal() +
   scale_y_continuous(labels = percent) +
   labs(y = "Percentage from top 20 TLDs in SZL \n", x = "\n TLD")  
 
-# -percentage means that the order is descending (based on num_domains)
-# Inf er for infinite, so here it means that the Other category is placed at the end
-# to plot it with Other where it is placed depending on descending num_domains, remove: %>% fct_relevel("Other", after = Inf)
+# write_csv(percentage_top20_szl, "results/percentage_top20_szl.csv")
 ```
 
 # 5. Overlap analysis ###### NOT DONE!!
@@ -589,6 +589,13 @@ Based on overlaps_hosts_lwa
 "Luxembourg Web Archive" : "#aeaeae" : "dotdash"
 "Netarkivet" : "#c9c9c9" : "dotted"
 "Hungary Web Archive" : "#3a3a3a" : "longdash"
+
+Links for tests with patterns (see also test R file):
+https://coolbutuseless.github.io/2020/04/01/introducing-ggpattern-pattern-fills-for-ggplot/
+https://coolbutuseless.github.io/package/ggpattern/articles/geom-gallery-geometry.html
+https://coolbutuseless.github.io/package/ggpattern/articles/pattern-magick.html - TRY THIS ONE OUT!
+https://cran.r-project.org/web/packages/ggpattern/vignettes/patterns-stripes.html
+https://stackoverflow.com/questions/74159276/ggpattern-pattern-for-a-specified-value-of-variable
 
 
 ## LWA
@@ -697,9 +704,20 @@ overlaps_hosts_dk_melt %>% ggplot(aes(x=Year, y=n, fill=Archive)) +
   labs(y = "Number of .dk domains \n", x = "\n Year", color = "Archive")
 ```
 
-# 6. Distinct TLD per year in the national archives (not BNF)
-Based on distinct-tld-per-year.csv (the ones with all)
+# 6. Distinct TLDs in the national archives (not BNF)
+Based on distinct-tld-overall and distinct-tld-per-year.csv (the ones with all)
 ```{r}
+# distinct tld overall
+# read files and add column names
+distinct_tld_overall <- read_data_files("data", "*distinct-tld-overall.csv", c("n")) %>% 
+  separate(collection, c("archive", "country"), remove=TRUE) %>%
+  select(-c("country")) %>%
+  arrange(desc(n))
+
+# write to csv (optional)
+# write_csv(distinct_tld_overall, "results/distinct_tld_overall.csv")
+
+# distinct tld per year
 # read files and add column names + column with archive name for
 szl_tld_year <- read.csv("data/szl-all-statb-distinct-tld-per-year.csv", header = FALSE) 
 colnames(szl_tld_year) <- c("year","n_tlds") # name columns
@@ -741,31 +759,25 @@ distinct_tlds_per_year %>%
   labs(y = "Number of TLDs \n", x = "\n Year", color = "Archive", linetype = "Archive")
 
 # write to csv (optional)
-# write_csv(distinct_tlds_per_year, "results/distinct_tlds_per_year.csv")
+# for more appropriate format for csv, rename column with archive name
 
+nak_tld_year_write <- nak_tld_year
+colnames(nak_tld_year_write) <- c("year","nak") # name columns
 
-szl_tld_per_year <- read.csv("data/szl-all-statb-distinct-tld-per-year.csv", header = FALSE) 
-colnames(szl_tld_per_year) <- c("year","szl") # name columns
+lwa_tld_year_write <- lwa_tld_year
+colnames(lwa_tld_year_write) <- c("year","lwa") # name columns
 
-lwa_tld_per_year <- read.csv("data/lwa-all-statb-distinct-tld-per-year.csv", header = FALSE) 
-colnames(lwa_tld_per_year) <- c("year","lwa") # name columns
+szl_tld_year_write <- szl_tld_year
+colnames(szl_tld_year_write) <- c("year","szl") # name columns
 
-nak_tld_per_year <- read.csv("data/nak-all-statb-distinct-tld-per-year.csv", header = FALSE) 
-colnames(nak_tld_per_year) <- c("year","nak") # name columns
+distinct_tlds_per_year_df_prelim <- merge(nak_tld_year_write,lwa_tld_year_write,by = "year", all=TRUE)
+distinct_tlds_per_year_df <- merge(distinct_tlds_per_year_df_prelim,szl_tld_year_write,by = "year", all=TRUE)
 
-distinct_tlds_per_year_df_prelim <- merge(szl_tld_per_year,lwa_tld_per_year,by = "year", all=TRUE)
-distinct_tlds_per_year_df <- merge(distinct_tlds_per_year_df_prelim,nak_tld_per_year,by = "year", all=TRUE)
-
+# write_csv(distinct_tlds_per_year_df, "results/distinct_tlds_per_year_df.csv")
 ```
 
-###  QUESTION: Do we need to plot the statc-distinct-lvl2-per-tld-per-year as well? This would show the changes over time!
-```{r}
-# read data
-dk_lvl2_per_tld_per_year <- read_csv("data/nak-dk-statc-distinct-lvl2-per-tld-per-year.csv")
-```
 
 EXTRA
-
 
 ###TEST COLOUR SCHEME
 ```{r}
