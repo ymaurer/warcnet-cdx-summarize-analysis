@@ -153,9 +153,6 @@ lu_across_archives <- lvl2_per_tld_per_year %>%
   select(-c("n","collection","country")) %>% # remove the columns mentioned
   select(archive, everything()) # move the column year to the first column
 
-# write to csv (optional)
-# write_csv(lu_across_archives, "results/lu_across_archives.csv")
-
 # data cleaning and correcting class (first data in 1996)
 lu_across_archives <- t(lu_across_archives) # transpose df
 column_names <- lu_across_archives[1,] # create vector from row 1
@@ -165,6 +162,9 @@ lu_across_archives <- data.frame(lu_across_archives)
 lu_across_archives <- lu_across_archives %>% mutate(across(everything(), trimws)) # remove whitespace
 lu_across_archives <- lu_across_archives %>% mutate_at(c("bnf","cc","ia","lwa","nak","szl"), as.numeric)
 lu_across_archives$year <- as.factor(lu_across_archives$year)
+
+# write to csv (optional)
+# write_csv(lu_across_archives, "results/lu_across_archives.csv")
 
 # use str(lu_across_archives) to check that the years are factors and that the values are numeric
 
@@ -234,9 +234,6 @@ fr_across_archives <- lvl2_per_tld_per_year %>%
   select(-c("n","collection","country")) %>%
   select(archive, everything())
 
-# write to csv (optional)
-# write_csv(fr_across_archives, "results/fr_across_archives.csv")
-
 # data cleaning and correcting class (first data in 1993)
 fr_across_archives <- t(fr_across_archives) # transpose df
 column_names <- fr_across_archives[1,] # create vector from row 1
@@ -246,6 +243,9 @@ fr_across_archives <- data.frame(fr_across_archives)
 fr_across_archives <- fr_across_archives %>% mutate(across(everything(), trimws)) # remove whitespace
 fr_across_archives <- fr_across_archives %>% mutate_at(c("bnf","cc","ia","lwa","nak","szl"), as.numeric)
 fr_across_archives$year <- as.factor(fr_across_archives$year)
+
+# write to csv (optional)
+# write_csv(fr_across_archives, "results/fr_across_archives.csv")
 
 # use str(fr_across_archives) to check that the years are factors and that the values are numeric
 
@@ -313,9 +313,6 @@ dk_across_archives <- lvl2_per_tld_per_year %>%
   select(-c("n","collection","country")) %>%
   select(archive, everything())
 
-# write to csv (optional)
-write_csv(dk_across_archives, "results/dk_across_archives.csv")
-
 # data cleaning and correcting class (first data in 1995)
 dk_across_archives <- t(dk_across_archives) # transpose df
 column_names <- dk_across_archives[1,] # create vector from row 1
@@ -325,6 +322,9 @@ dk_across_archives <- data.frame(dk_across_archives)
 dk_across_archives <- dk_across_archives %>% mutate(across(everything(), trimws)) # remove whitespace
 dk_across_archives <- dk_across_archives %>% mutate_at(c("bnf", "cc", "ia", "lwa","nak","szl"), as.numeric)
 dk_across_archives$year <- as.factor(dk_across_archives$year)
+
+# write to csv (optional)
+# write_csv(dk_across_archives, "results/dk_across_archives.csv")
 
 # use str(dk_across_archives) to check that the years are factors and that the values are numeric
 
@@ -392,9 +392,6 @@ hu_across_archives <- lvl2_per_tld_per_year %>%
   select(-c("n","collection","country")) %>%
   select(archive, everything())
 
-# write to csv (optional)
-# write_csv(hu_across_archives, "results/hu_across_archives.csv")
-
 # data cleaning and correcting class (first data in 1996)
 hu_across_archives <- t(hu_across_archives) # transpose df
 column_names <- hu_across_archives[1,] # create vector from row 1
@@ -404,6 +401,9 @@ hu_across_archives <- data.frame(hu_across_archives)
 hu_across_archives <- hu_across_archives %>% mutate(across(everything(), trimws)) # remove whitespace
 hu_across_archives <- hu_across_archives %>% mutate_at(c("bnf", "cc", "ia", "lwa","nak","szl"), as.numeric)
 hu_across_archives$year <- as.factor(hu_across_archives$year)
+
+# write to csv (optional)
+# write_csv(hu_across_archives, "results/hu_across_archives.csv")
 
 # use str(hu_across_archives) to check that the years are factors and that the values are numeric
 
@@ -462,6 +462,122 @@ hu_across_archives_melt %>%
   scale_color_manual(values = line_colors_hu_subset, labels = line_labels_hu_subset) +
   labs(y = "Number of .hu domains \n", x = "\n Year", color = "Archive", linetype = "Archive")
 ```
+
+## Test: plotting the curves for IA together to see if there is any pattern?
+If we want to use this, the colors, linetypes and labels should be changed to match the order!
+```{r}
+# create dataframe for a country and clean data
+IA_all_ccTLDs <- lvl2_per_tld_per_year %>% 
+  subset(archive == "ia" | archive == "year") %>%
+  select(-c("collection","country")) %>%
+  select(archive, everything())
+
+# data cleaning and correcting class (first data in 1995)
+IA_all_ccTLDs$n[1] <- "year"
+IA_all_ccTLDs <- IA_all_ccTLDs %>% 
+  subset(n != "tld") %>%
+  select(-c("archive"))
+IA_all_ccTLDs <- t(IA_all_ccTLDs) # transpose df
+column_names <- IA_all_ccTLDs[1,] # create vector from row 1
+colnames(IA_all_ccTLDs) <- column_names # use vector to assign column names
+IA_all_ccTLDs <- IA_all_ccTLDs[-c(1),] # remove row 1 (archive names)  
+IA_all_ccTLDs <- data.frame(IA_all_ccTLDs)
+IA_all_ccTLDs <- IA_all_ccTLDs %>% mutate(across(everything(), trimws)) # remove whitespace
+IA_all_ccTLDs <- IA_all_ccTLDs %>% mutate_at(c("dk", "fr", "hu", "lu"), as.numeric)
+IA_all_ccTLDs$year <- as.factor(IA_all_ccTLDs$year)
+
+# write to csv (optional)
+# write_csv(IA_all_ccTLDs, "results/IA_all_ccTLDs")
+
+# use str(IA_all_ccTLDs) to check that the years are factors and that the values are numeric
+
+# create long format for ggplot
+IA_all_ccTLDs_melt <- melt(IA_all_ccTLDs, 
+                        id.var="year",
+                        measure.vars = colnames(IA_all_ccTLDs)[! colnames(IA_all_ccTLDs) %in% c("year")],
+                        variable.name = "archive", 
+                        value.name = "n")
+
+# sort colors and labels in the right order
+# line_colors_dk <- c("#c9c9c9","#000000","#e5e5e5","#838383","#aeaeae","#3a3a3a")
+# line_labels_dk <- c("Netarkivet","Internet Archive","Common Crawl","Bibliothèque nationale de France","Luxembourg Web Archive","Hungary Web Archive")
+# line_types_dk <- c("dotted","dashed","solid","twodash","dotdash","longdash")
+
+# reorder factors and plot
+IA_all_ccTLDs_melt %>% 
+#  mutate(archive = fct_relevel(archive,"dk","fr","hu","lu")) %>%
+  ggplot(aes(x = year, y = n, group = archive)) + 
+  geom_line(aes(linetype=archive,color = archive), linewidth = 1.2) + 
+  theme_minimal() +
+  theme(legend.position="bottom",
+        legend.title=element_text(size = 12, face = "bold"),
+        legend.text=element_text(size = 12, face = "bold"),
+        legend.key.width=unit(2,"cm"),
+        axis.text=element_text(size=12, face = "bold"),
+        axis.title=element_text(size=12, face = "bold")) +
+  scale_y_continuous(labels = function(x) format(x, big.mark = ".", decimal.mark = ",", scientific = F)) +
+#  scale_linetype_manual(values = line_types_dk, labels = line_labels_dk) +
+#  scale_color_manual(values = line_colors_dk, labels = line_labels_dk) +
+  labs(y = "Number of .dk domains \n", x = "\n Year", color = "Archive", linetype = "Archive")
+```
+
+## TEST, same for CC
+```{r}
+# create dataframe for a country and clean data
+CC_all_ccTLDs <- lvl2_per_tld_per_year %>% 
+  subset(archive == "cc" | archive == "year") %>%
+  select(-c("collection","country")) %>%
+  select(archive, everything())
+
+# data cleaning and correcting class (first data in 1995)
+CC_all_ccTLDs$n[1] <- "year"
+CC_all_ccTLDs <- CC_all_ccTLDs %>% 
+  subset(n != "tld") %>%
+  select(-c("archive"))
+CC_all_ccTLDs <- t(CC_all_ccTLDs) # transpose df
+column_names <- CC_all_ccTLDs[1,] # create vector from row 1
+colnames(CC_all_ccTLDs) <- column_names # use vector to assign column names
+CC_all_ccTLDs <- CC_all_ccTLDs[-c(1:8),] # remove row 1 (archive names)  
+CC_all_ccTLDs <- data.frame(CC_all_ccTLDs)
+CC_all_ccTLDs <- CC_all_ccTLDs %>% mutate(across(everything(), trimws)) # remove whitespace
+CC_all_ccTLDs <- CC_all_ccTLDs %>% mutate_at(c("dk", "fr", "hu", "lu"), as.numeric)
+CC_all_ccTLDs$year <- as.factor(CC_all_ccTLDs$year)
+
+# write to csv (optional)
+# write_csv(CC_all_ccTLDs, "results/CC_all_ccTLDs")
+
+# use str(CC_all_ccTLDs) to check that the years are factors and that the values are numeric
+
+# create long format for ggplot
+CC_all_ccTLDs_melt <- melt(CC_all_ccTLDs, 
+                        id.var="year",
+                        measure.vars = colnames(CC_all_ccTLDs)[! colnames(CC_all_ccTLDs) %in% c("year")],
+                        variable.name = "archive", 
+                        value.name = "n")
+
+# sort colors and labels in the right order
+# line_colors_dk <- c("#c9c9c9","#000000","#e5e5e5","#838383","#aeaeae","#3a3a3a")
+# line_labels_dk <- c("Netarkivet","Internet Archive","Common Crawl","Bibliothèque nationale de France","Luxembourg Web Archive","Hungary Web Archive")
+# line_types_dk <- c("dotted","dashed","solid","twodash","dotdash","longdash")
+
+# reorder factors and plot
+CC_all_ccTLDs_melt %>% 
+#  mutate(archive = fct_relevel(archive,"dk","fr","hu","lu")) %>%
+  ggplot(aes(x = year, y = n, group = archive)) + 
+  geom_line(aes(linetype=archive,color = archive), linewidth = 1.2) + 
+  theme_minimal() +
+  theme(legend.position="bottom",
+        legend.title=element_text(size = 12, face = "bold"),
+        legend.text=element_text(size = 12, face = "bold"),
+        legend.key.width=unit(2,"cm"),
+        axis.text=element_text(size=12, face = "bold"),
+        axis.title=element_text(size=12, face = "bold")) +
+  scale_y_continuous(labels = function(x) format(x, big.mark = ".", decimal.mark = ",", scientific = F)) +
+#  scale_linetype_manual(values = line_types_dk, labels = line_labels_dk) +
+#  scale_color_manual(values = line_colors_dk, labels = line_labels_dk) +
+  labs(y = "Number of .dk domains \n", x = "\n Year", color = "Archive", linetype = "Archive")
+```
+
 
 # 4. Top 20 TLDs in the different national archives
 Based on statc-distinct-lvl2-per-tld-overall.
