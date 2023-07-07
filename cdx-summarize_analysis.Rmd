@@ -627,10 +627,10 @@ CC_all_ccTLDs_melt %>%
 ```
 
 
-# 4. Top 20 TLDs in the different national archives
+# Figure 3: Top 20 TLDs in the different national archives
 Based on statc-distinct-lvl2-per-tld-overall.
 
-## 4 Netarkivet
+## Fig 3 Netarkivet
 ```{r}
 # read data and add column names
 dk_lvl2_per_tld <- read.csv("data/nak-all-statc-distinct-lvl2-per-tld-overall.csv", header=FALSE) # It has no headers, so we add the column names
@@ -652,8 +652,15 @@ percentage_top20_nak %>%
                fct_relevel("Other", after = Inf), y=percentage)) + 
   geom_bar(stat="identity", fill="#c9c9c9") +
   theme_minimal() +
+  theme(legend.position="none",
+        legend.title=element_text(size = 14, face = "bold"),
+        legend.text=element_text(size = 14, face = "bold"),
+        legend.key.width=unit(2,"cm"), # makes the legend key (the example of the linetype used) longer
+        axis.text=element_text(size=14, face = "bold"),
+        axis.title=element_text(size=22, face = "bold"),
+        axis.title.x=element_blank()) +
   scale_y_continuous(labels = percent) +
-  labs(y = "Percentage from top 20 TLDs in Netarkivet \n", x = "\n TLD")  
+  labs(y = "Top 20 TLDs in NAK \n", x = "\n TLD")  
 
 # -percentage means that the order is descending (based on num_domains)
 # Inf er for infinite, so here it means that the Other category is placed at the end
@@ -662,34 +669,7 @@ percentage_top20_nak %>%
 # write_csv(percentage_top20_nak, "results/percentage_top20_nak.csv")
 ```
 
-## 4 Luxembourg Web Archive
-Based on statc-distinct-lvl2-per-tld-overall.
-```{r}
-# read data and add column names
-lwa_lvl2_per_tld <- read.csv("data/lwa-all-statc-distinct-lvl2-per-tld-overall.csv", header=FALSE) # It has no headers, so we add the column names
-colnames(lwa_lvl2_per_tld) = c("TLD","num_domains")
-
-# to see the data to decide how many TLDs to include
-head(lwa_lvl2_per_tld, 20) # change the number depending on how many you want to see
-  
-# create top20 and an "Other" category with the rest
-percentage_top20_lwa <- lwa_lvl2_per_tld %>% 
-  arrange(desc(num_domains)) %>% # probably not necessary but just to make sure they are properly sorted
-  split(c(rep("top", 20), rep("rest", nrow(.) - 20))) %>% # splits into the top 20 and the rest
-  (\(s) bind_rows(s$top, data.frame(TLD = "Other", num_domains = sum(s$rest$num_domains)))) %>% # sums num_domains for all from the "other" category
-  mutate(percentage = num_domains/sum(num_domains)) # creates a column with the percentages for each TLD and the Other category 
-
-# plot with reorder to order descending based on percentage but with  
-percentage_top20_lwa %>% ggplot(aes(x=reorder(TLD, -percentage) %>% fct_relevel("Other", after = Inf), y=percentage)) + 
-  geom_bar(stat="identity", fill="#aeaeae") +
-  theme_minimal() +
-  scale_y_continuous(labels = percent) +
-  labs(y = "Percentage from top 20 TLDs in LWA \n", x = "\n TLD")  
-
-# write_csv(percentage_top20_lwa, "results/percentage_top20_lwa.csv")
-```
-
-## 4 BNF
+## Fig 3 BNF
 Based on statc-distinct-lvl2-per-tld-overall.
 ```{r}
 # read data and add column names
@@ -710,13 +690,20 @@ percentage_top20_bnf <- bnf_lvl2_per_tld %>%
 percentage_top20_bnf %>% ggplot(aes(x=reorder(TLD, -percentage) %>% fct_relevel("Other", after = Inf), y=percentage)) + 
   geom_bar(stat="identity", fill="#838383") +
   theme_minimal() +
+  theme(legend.position="none",
+        legend.title=element_text(size = 14, face = "bold"),
+        legend.text=element_text(size = 14, face = "bold"),
+        legend.key.width=unit(2,"cm"), # makes the legend key (the example of the linetype used) longer
+        axis.text=element_text(size=14, face = "bold"),
+        axis.title=element_text(size=22, face = "bold"),
+        axis.title.x=element_blank()) +
   scale_y_continuous(labels = percent) +
-  labs(y = "Percentage from top 20 TLDs in BNF \n", x = "\n TLD")  
+  labs(y = "Top 20 TLDs in BNF \n", x = "\n TLD")  
 
 # write_csv(percentage_top20_bnf, "results/percentage_top20_bnf.csv")
 ```
 
-## 4 SZL
+## Fig 3 SZL
 Based on statc-distinct-lvl2-per-tld-overall.
 ```{r}
 # read data and add column names
@@ -737,11 +724,53 @@ percentage_top20_szl <- szl_lvl2_per_tld %>%
 percentage_top20_szl %>% ggplot(aes(x=reorder(TLD, -percentage) %>% fct_relevel("Other", after = Inf), y=percentage)) + 
   geom_bar(stat="identity", fill="#3a3a3a") +
   theme_minimal() +
+    theme(legend.position="none",
+        legend.title=element_text(size = 14, face = "bold"),
+        legend.text=element_text(size = 14, face = "bold"),
+        legend.key.width=unit(2,"cm"), # makes the legend key (the example of the linetype used) longer
+        axis.text=element_text(size=14, face = "bold"),
+        axis.title=element_text(size=22, face = "bold"),
+        axis.title.x=element_blank()) +
   scale_y_continuous(labels = percent) +
-  labs(y = "Percentage from top 20 TLDs in SZL \n", x = "\n TLD")  
+  labs(y = "Top 20 TLDs in SZL \n", x = "\n TLD")  
 
 # write_csv(percentage_top20_szl, "results/percentage_top20_szl.csv")
 ```
+
+## Fig 3 Luxembourg Web Archive
+Based on statc-distinct-lvl2-per-tld-overall.
+```{r}
+# read data and add column names
+lwa_lvl2_per_tld <- read.csv("data/lwa-all-statc-distinct-lvl2-per-tld-overall.csv", header=FALSE) # It has no headers, so we add the column names
+colnames(lwa_lvl2_per_tld) = c("TLD","num_domains")
+
+# to see the data to decide how many TLDs to include
+head(lwa_lvl2_per_tld, 20) # change the number depending on how many you want to see
+  
+# create top20 and an "Other" category with the rest
+percentage_top20_lwa <- lwa_lvl2_per_tld %>% 
+  arrange(desc(num_domains)) %>% # probably not necessary but just to make sure they are properly sorted
+  split(c(rep("top", 20), rep("rest", nrow(.) - 20))) %>% # splits into the top 20 and the rest
+  (\(s) bind_rows(s$top, data.frame(TLD = "Other", num_domains = sum(s$rest$num_domains)))) %>% # sums num_domains for all from the "other" category
+  mutate(percentage = num_domains/sum(num_domains)) # creates a column with the percentages for each TLD and the Other category 
+
+# plot with reorder to order descending based on percentage but with  
+percentage_top20_lwa %>% ggplot(aes(x=reorder(TLD, -percentage) %>% fct_relevel("Other", after = Inf), y=percentage)) + 
+  geom_bar(stat="identity", fill="#aeaeae") +
+  theme_minimal() +
+  theme(legend.position="none",
+        legend.title=element_text(size = 14, face = "bold"),
+        legend.text=element_text(size = 14, face = "bold"),
+        legend.key.width=unit(2,"cm"), # makes the legend key (the example of the linetype used) longer
+        axis.text=element_text(size=14, face = "bold"),
+        axis.title=element_text(size=22, face = "bold"),
+        axis.title.x=element_blank()) +
+  scale_y_continuous(labels = percent) +
+  labs(y = "Top 20 TLDs in LWA \n", x = "\n TLD")  
+
+# write_csv(percentage_top20_lwa, "results/percentage_top20_lwa.csv")
+```
+
 
 # 5. Overlap analysis ###### NOT DONE!!
 Based on overlaps_hosts_lu
